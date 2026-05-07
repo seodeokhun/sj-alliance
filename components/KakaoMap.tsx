@@ -45,7 +45,7 @@ export default function KakaoMap({
 
     const script = document.createElement("script");
     // https 명시 + libraries 제거 (좌표 직접 사용)
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KEY}&autoload=false`;
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KEY}&autoload=false&libraries=services`;
     script.async = true;
     script.onload = () => {
       if (!window.kakao || !window.kakao.maps) {
@@ -87,9 +87,11 @@ export default function KakaoMap({
 
     const bounds = new window.kakao.maps.LatLngBounds();
     let openInfoWindow: any = null;
+    const geocoder = new window.kakao.maps.services.Geocoder();
+    let processed = 0;
 
-    stores.forEach((store) => {
-      const position = new window.kakao.maps.LatLng(store.lat, store.lng);
+    const addMarker = (store: Store, lat: number, lng: number) => {
+      const position = new window.kakao.maps.LatLng(lat, lng);
       const marker = new window.kakao.maps.Marker({
         map,
         position,
@@ -123,11 +125,24 @@ export default function KakaoMap({
         openInfoWindow = infoWindow;
         onMarkerClick?.(store.id);
       });
-    });
+    };
 
-    if (stores.length > 0) {
-      map.setBounds(bounds);
-    }
+    stores.forEach((store) => {
+      // 카카오 Geocoder로 정확한 좌표 검색 (실패 시 추정 좌표 사용)
+      geocoder.addressSearch(store.address.ko, (result: any[], status: string) => {
+        let lat = store.lat;
+        let lng = store.lng;
+        if (status === window.kakao.maps.services.Status.OK && result[0]) {
+          lat = parseFloat(result[0].y);
+          lng = parseFloat(result[0].x);
+        }
+        addMarker(store, lat, lng);
+        processed++;
+        if (processed === stores.length && stores.length > 0) {
+          map.setBounds(bounds);
+        }
+      });
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapLoaded, stores]);
 
