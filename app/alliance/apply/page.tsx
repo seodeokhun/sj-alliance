@@ -4,15 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-function generateToken(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let token = "";
-  for (let i = 0; i < 8; i++) {
-    token += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return token;
-}
-
 export default function ApplyPage() {
   const [form, setForm] = useState({
     business_number: "",
@@ -23,9 +14,11 @@ export default function ApplyPage() {
     contract_start: "",
     contract_end: "",
     benefit: "",
+    password: "",
+    password_confirm: "",
   });
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ token: string; id: string } | null>(null);
+  const [result, setResult] = useState<{ id: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function update(field: string, value: string) {
@@ -54,13 +47,21 @@ export default function ApplyPage() {
       setError("필수 항목을 모두 입력해주세요");
       return;
     }
+    if (!form.password || form.password.length < 4) {
+      setError("비밀번호는 4자리 이상 입력해주세요");
+      return;
+    }
+    if (form.password !== form.password_confirm) {
+      setError("비밀번호 확인이 일치하지 않습니다");
+      return;
+    }
 
     setSubmitting(true);
-    const token = generateToken();
+    const { password_confirm, password, ...rest } = form;
 
     const { data, error: dbError } = await supabase
       .from("alliance_applications")
-      .insert({ ...form, edit_token: token })
+      .insert({ ...rest, edit_token: password })
       .select()
       .single();
 
@@ -71,7 +72,7 @@ export default function ApplyPage() {
       return;
     }
 
-    setResult({ token, id: data.id });
+    setResult({ id: data.id });
   }
 
   if (result) {
@@ -88,18 +89,11 @@ export default function ApplyPage() {
             <h2 className="text-xl font-bold mb-2" style={{ color: "#11306E" }}>신청 접수 완료!</h2>
             <p className="text-sm text-gray-600 mb-6">
               심사 후 결과가 안내됩니다.<br />
-              아래 본인 인증 코드를 꼭 보관하세요.
+              본인이 설정한 비밀번호로 신청 진행 상태를 조회할 수 있습니다.
             </p>
 
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mb-4">
-              <p className="text-xs text-gray-500 mb-1">신청 수정·취소용 인증 코드</p>
-              <p className="text-2xl font-mono font-bold tracking-wider" style={{ color: "#E6007E" }}>
-                {result.token}
-              </p>
-            </div>
-
             <p className="text-xs text-gray-500 mb-6">
-              ⚠️ 이 코드를 잃어버리면 신청 수정·삭제가 불가합니다. 카카오톡 "나에게 메시지" 등에 저장해두세요.
+              ⚠️ 비밀번호를 잊으면 신청 조회·수정이 불가합니다. 안전한 곳에 보관해주세요.
             </p>
 
             <Link href="/alliance" className="inline-block px-6 py-3 rounded-lg text-white font-medium" style={{ backgroundColor: "#11306E" }}>
@@ -171,6 +165,22 @@ export default function ApplyPage() {
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm resize-none"
               placeholder="예: 학생증 제시 시 10% 할인, 음료 1잔 무료 제공 등" />
           </Field>
+
+          <div className="pt-3 border-t border-gray-200">
+            <p className="text-xs text-gray-500 mb-3">신청 진행 상태 조회용 비밀번호를 설정해주세요</p>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="비밀번호 *" required>
+                <input type="password" value={form.password} onChange={(e) => update("password", e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm"
+                  placeholder="4자리 이상" />
+              </Field>
+              <Field label="비밀번호 확인 *" required>
+                <input type="password" value={form.password_confirm} onChange={(e) => update("password_confirm", e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm"
+                  placeholder="다시 입력" />
+              </Field>
+            </div>
+          </div>
 
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">

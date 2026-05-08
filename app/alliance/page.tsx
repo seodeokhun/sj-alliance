@@ -21,9 +21,16 @@ export default function AllianceHub() {
     {
       href: "/alliance/apply",
       icon: "📝",
-      title: "업체 신청",
+      title: "협약 신청",
       desc: "협력 업체 등록을 원하시면 여기서 신청",
       bg: "#E6007E",
+    },
+    {
+      href: "/alliance/admin",
+      icon: "📋",
+      title: "신청 관리",
+      desc: "신청자 본인 비밀번호 또는 관리자 로그인",
+      bg: "#FFD500",
     },
   ];
 

@@ -40,7 +40,8 @@ export default function Home() {
       subs: [
         { href: "/alliance/list", label: "업체 리스트", ready: true },
         { href: "/map", label: "전체 지도", ready: true },
-        { href: "/alliance/apply", label: "업체 신청 (전단지 QR)", ready: true },
+        { href: "/alliance/apply", label: "협약 신청", ready: true },
+        { href: "/alliance/admin", label: "신청 관리", ready: true },
       ],
     },
     {
