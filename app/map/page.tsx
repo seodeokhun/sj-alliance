@@ -8,6 +8,7 @@ import KakaoMap from "@/components/KakaoMap";
 
 export default function MapPage() {
   const [locale, setLocale] = useState<Locale>("ko");
+  const [search, setSearch] = useState("");
   const [activeCategories, setActiveCategories] = useState<Set<StoreCategory>>(
     new Set(Object.keys(CATEGORY_INFO) as StoreCategory[])
   );
@@ -23,10 +24,22 @@ export default function MapPage() {
     return Array.from(set);
   }, []);
 
-  const filteredStores = useMemo(
-    () => STORES.filter((s) => activeCategories.has(s.category)),
-    [activeCategories]
-  );
+  const filteredStores = useMemo(() => {
+    return STORES.filter((s) => {
+      if (!activeCategories.has(s.category)) return false;
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      const name = (s.name[locale] || s.name.ko).toLowerCase();
+      const benefit = (s.benefit[locale] || s.benefit.ko).toLowerCase();
+      return (
+        name.includes(q) ||
+        s.name.ko.toLowerCase().includes(q) ||
+        benefit.includes(q) ||
+        s.industry.toLowerCase().includes(q) ||
+        s.address.ko.toLowerCase().includes(q)
+      );
+    });
+  }, [activeCategories, search, locale]);
 
   function toggleCategory(c: StoreCategory) {
     setActiveCategories((prev) => {
@@ -51,6 +64,23 @@ export default function MapPage() {
         <Link href="/" className="text-white text-xl">←</Link>
         <h1 className="text-white font-semibold text-base flex-1">🗺 전체 지도</h1>
       </header>
+
+      {/* 검색창 */}
+      <div className="bg-white border-b border-gray-200 px-4 pt-4">
+        <div className="bg-gray-100 rounded-lg flex items-center gap-2 px-4 py-2.5">
+          <span className="text-gray-400">🔍</span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("searchPlaceholder", locale)}
+            className="flex-1 outline-none text-sm text-gray-700 bg-transparent"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600">✕</button>
+          )}
+        </div>
+      </div>
 
       <div className="bg-white border-b border-gray-200 p-4">
         <div className="flex items-center justify-between mb-2">

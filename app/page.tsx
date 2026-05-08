@@ -1,14 +1,11 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { STORES, CATEGORY_INFO, type StoreCategory } from "@/data/stores";
-import { LOCALES, type Locale, t } from "@/data/i18n";
+import { useState, useEffect } from "react";
+import { LOCALES, type Locale } from "@/data/i18n";
 
 export default function Home() {
   const [locale, setLocale] = useState<Locale>("ko");
-  const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState<StoreCategory | "all">("all");
   const [showLangMenu, setShowLangMenu] = useState(false);
 
   useEffect(() => {
@@ -22,49 +19,53 @@ export default function Home() {
     localStorage.setItem("sj-alliance-locale", code);
   }
 
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: STORES.length };
-    for (const s of STORES) counts[s.category] = (counts[s.category] || 0) + 1;
-    return counts;
-  }, []);
-
-  const usedCategories = useMemo(
-    () =>
-      (Object.keys(CATEGORY_INFO) as StoreCategory[]).filter(
-        (c) => categoryCounts[c] && categoryCounts[c] > 0
-      ),
-    [categoryCounts]
-  );
-
-  const filteredStores = useMemo(() => {
-    return STORES.filter((s) => {
-      if (activeCategory !== "all" && s.category !== activeCategory) return false;
-      if (!search.trim()) return true;
-      const q = search.toLowerCase();
-      const name = (s.name[locale] || s.name.ko).toLowerCase();
-      const benefit = (s.benefit[locale] || s.benefit.ko).toLowerCase();
-      return (
-        name.includes(q) ||
-        s.name.ko.toLowerCase().includes(q) ||
-        benefit.includes(q) ||
-        s.industry.toLowerCase().includes(q)
-      );
-    });
-  }, [search, activeCategory, locale]);
+  const categories = [
+    {
+      href: "/alliance",
+      icon: "🍽",
+      titleKo: "SJ Alliance",
+      titleEn: "SJ Alliance",
+      descKo: "협약 업체 할인·지도·신청",
+      descEn: "Partnered stores · Map · Apply",
+      bg: "#11306E",
+      accent: "#FFD500",
+    },
+    {
+      href: "/lost",
+      icon: "📦",
+      titleKo: "분실물",
+      titleEn: "Lost & Found",
+      descKo: "분실물 보관·찾기·신청",
+      descEn: "Search · Register lost items",
+      bg: "#213A8F",
+      accent: "#FFD500",
+      ready: false,
+    },
+    {
+      href: "/volunteer",
+      icon: "🤝",
+      titleKo: "서포터즈·봉사단",
+      titleEn: "Supporters & Volunteers",
+      descKo: "지원자 모집·신청서",
+      descEn: "Apply for programs",
+      bg: "#E6007E",
+      accent: "#FFD500",
+      ready: false,
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="px-5 py-4 flex items-center justify-between sticky top-0 z-40" style={{ backgroundColor: "#11306E" }}>
+      <header className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: "#11306E" }}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm" style={{ backgroundColor: "#FFD500", color: "#11306E" }}>SJ</div>
           <div>
-            <h1 className="text-white font-semibold text-base leading-tight">{t("siteName", locale)}</h1>
-            <p className="text-xs leading-tight" style={{ color: "#FFD500" }}>{t("siteDesc", locale)}</p>
+            <h1 className="text-white font-semibold text-base leading-tight">서정대학교</h1>
+            <p className="text-xs leading-tight" style={{ color: "#FFD500" }}>학생 종합 정보</p>
           </div>
         </div>
         <div className="relative">
-          <button onClick={() => setShowLangMenu(!showLangMenu)} className="px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:opacity-80 transition" style={{ backgroundColor: "#213A8F", color: "white" }}>
+          <button onClick={() => setShowLangMenu(!showLangMenu)} className="px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2" style={{ backgroundColor: "#213A8F", color: "white" }}>
             <span>🌐</span>
             <span className="hidden sm:inline">{LOCALES.find((l) => l.code === locale)?.label}</span>
             <span className="text-xs">▼</span>
@@ -72,7 +73,7 @@ export default function Home() {
           {showLangMenu && (
             <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg overflow-hidden min-w-[160px] z-50">
               {LOCALES.map((l) => (
-                <button key={l.code} onClick={() => changeLocale(l.code)} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-gray-100 transition ${l.code === locale ? "bg-blue-50 font-medium" : ""}`} style={l.code === locale ? { color: "#11306E" } : {}}>
+                <button key={l.code} onClick={() => changeLocale(l.code)} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-gray-100 ${l.code === locale ? "bg-blue-50 font-medium" : ""}`} style={l.code === locale ? { color: "#11306E" } : {}}>
                   <span>{l.flag}</span>
                   <span>{l.label}</span>
                 </button>
@@ -82,78 +83,45 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 상단 탭 */}
-      <nav className="bg-white border-b border-gray-200 flex">
-        <div className="flex-1 py-3 text-center font-semibold text-sm border-b-2" style={{ borderColor: "#11306E", color: "#11306E" }}>
-          🍽 협약업체
-        </div>
-        <Link href="/map" className="flex-1 py-3 text-center font-semibold text-sm text-gray-500 hover:text-gray-800 border-b-2 border-transparent">
-          🗺 전체 지도
-        </Link>
-      </nav>
-
-      {/* 히어로 + 검색 */}
-      <section className="px-5 py-6 text-white" style={{ backgroundColor: "#213A8F" }}>
-        <h2 className="text-xl font-semibold mb-1">{t("heroTitle", locale)}</h2>
-        <p className="text-sm mb-4" style={{ color: "#B5D4F4" }}>{STORES.length} {t("storeCount", locale)} · {t("heroDesc", locale)}</p>
-        <div className="bg-white rounded-lg flex items-center gap-2 px-4 py-3">
-          <span className="text-gray-400">🔍</span>
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("searchPlaceholder", locale)} className="flex-1 outline-none text-sm text-gray-700" />
-          {search && <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600">✕</button>}
-        </div>
+      <section className="px-5 py-10 text-white text-center" style={{ backgroundColor: "#213A8F" }}>
+        <h2 className="text-2xl font-bold mb-2">
+          {locale === "ko" ? "어떤 정보가 필요하세요?" : "What are you looking for?"}
+        </h2>
+        <p className="text-sm" style={{ color: "#B5D4F4" }}>
+          {locale === "ko" ? "원하는 카테고리를 선택해주세요" : "Choose a category"}
+        </p>
       </section>
 
-      {/* 카테고리 필터 */}
-      <div className="px-5 py-3 bg-white border-b border-gray-200 overflow-x-auto">
-        <div className="flex gap-2 min-w-max">
-          <button onClick={() => setActiveCategory("all")} className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition ${activeCategory === "all" ? "text-white" : "bg-white text-gray-700 border border-gray-300"}`} style={activeCategory === "all" ? { backgroundColor: "#11306E" } : {}}>
-            {t("all", locale)} {STORES.length}
-          </button>
-          {usedCategories.map((c) => {
-            const info = CATEGORY_INFO[c];
-            const active = activeCategory === c;
-            return (
-              <button key={c} onClick={() => setActiveCategory(c)} className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition flex items-center gap-1.5 ${active ? "text-white" : "bg-white text-gray-700 border border-gray-300"}`} style={active ? { backgroundColor: "#11306E" } : {}}>
-                <span>{info.emoji}</span>
-                <span>{info[locale]}</span>
-                <span className="opacity-70">{categoryCounts[c]}</span>
-              </button>
+      <section className="px-5 py-8 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {categories.map((c) => {
+            const title = locale === "ko" ? c.titleKo : c.titleEn;
+            const desc = locale === "ko" ? c.descKo : c.descEn;
+            const Card = (
+              <div className="relative bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:border-gray-300 transition h-full">
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-4" style={{ backgroundColor: c.bg }}>
+                  {c.icon}
+                </div>
+                <h3 className="text-lg font-bold mb-1" style={{ color: "#11306E" }}>{title}</h3>
+                <p className="text-sm text-gray-500 mb-3">{desc}</p>
+                <span className="text-sm font-medium" style={{ color: c.bg }}>
+                  {c.ready === false
+                    ? (locale === "ko" ? "🚧 준비중" : "🚧 Coming soon")
+                    : (locale === "ko" ? "바로가기 →" : "Open →")}
+                </span>
+              </div>
+            );
+            return c.ready === false ? (
+              <div key={c.href} className="opacity-60 cursor-not-allowed">{Card}</div>
+            ) : (
+              <Link key={c.href} href={c.href}>{Card}</Link>
             );
           })}
         </div>
-      </div>
-
-      {/* 카드 리스트 (전체 너비) */}
-      <section className="px-5 py-4 max-w-3xl mx-auto">
-        {filteredStores.length === 0 ? (
-          <div className="py-12 text-center text-gray-500 text-sm">{t("noResults", locale)}</div>
-        ) : (
-          <div className="space-y-3">
-            {filteredStores.map((s) => {
-              const info = CATEGORY_INFO[s.category];
-              return (
-                <Link key={s.id} href={`/store/${s.id}`} className="block bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md hover:border-gray-300 transition cursor-pointer">
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-semibold leading-tight mb-1" style={{ color: "#11306E" }}>{s.name[locale] || s.name.ko}</h3>
-                      <p className="text-xs text-gray-500">{info.emoji} {info[locale]} · {s.industry}</p>
-                    </div>
-                    <span className="px-3 py-1 rounded-full text-[11px] font-semibold text-white whitespace-nowrap" style={{ backgroundColor: "#E6007E" }}>Discount</span>
-                  </div>
-                  <p className="text-sm text-gray-700 mb-3 leading-relaxed">{s.benefit[locale] || s.benefit.ko}</p>
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span className="text-gray-500 flex items-center gap-1 min-w-0 truncate">📍 {s.address.ko}</span>
-                    <span className="font-medium whitespace-nowrap" style={{ color: "#11306E" }}>{t("details", locale)} →</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
       </section>
 
       <footer className="mt-8 py-4 px-5 text-center text-xs text-white" style={{ backgroundColor: "#11306E" }}>
-        {t("footer", locale)}
+        © 2025 서정대학교 · 학생 종합 정보 사이트
       </footer>
     </main>
   );
