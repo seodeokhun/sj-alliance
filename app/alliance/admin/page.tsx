@@ -29,20 +29,22 @@ const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }>
 };
 
 export default function AdminPage() {
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [apps, setApps] = useState<App[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    if (password === ADMIN_PASSWORD) {
-      // 관리자 — 전체 조회
+    // 관리자 모드: 비밀번호만 1234 입력 (연락처 비워둠)
+    if (!phone && password === ADMIN_PASSWORD) {
       const { data, error: dbErr } = await supabase
         .from("alliance_applications")
         .select("*")
@@ -55,29 +57,50 @@ export default function AdminPage() {
       setApps(data || []);
       setIsAdmin(true);
       setAuthed(true);
-    } else {
-      // 일반 신청자 — 본인 비밀번호와 일치하는 것만
-      const { data, error: dbErr } = await supabase
-        .from("alliance_applications")
-        .select("*")
-        .eq("edit_token", password)
-        .order("created_at", { ascending: false });
-      if (dbErr) {
-        setError(dbErr.message);
-        setLoading(false);
-        return;
-      }
-      if (!data || data.length === 0) {
-        setError("일치하는 신청 내역이 없습니다");
-        setLoading(false);
-        return;
-      }
-      setApps(data);
-      setIsAdmin(false);
-      setAuthed(true);
+      setLoading(false);
+      return;
     }
+
+    // 신청자 모드: 연락처 + 비밀번호 일치
+    if (!phone || !password) {
+      setError("연락처와 비밀번호를 모두 입력해주세요");
+      setLoading(false);
+      return;
+    }
+
+    const { data, error: dbErr } = await supabase
+      .from("alliance_applications")
+      .select("*")
+      .eq("phone", phone)
+      .eq("edit_token", password)
+      .order("created_at", { ascending: false });
+
+    if (dbErr) {
+      setError(dbErr.message);
+      setLoading(false);
+      return;
+    }
+    if (!data || data.length === 0) {
+      setError("일치하는 신청 내역이 없습니다 (연락처·비밀번호 확인)");
+      setLoading(false);
+      return;
+    }
+    setApps(data);
+    setIsAdmin(false);
+    setAuthed(true);
     setLoading(false);
   }
+
+  const filteredApps = statusFilter === "all"
+    ? apps
+    : apps.filter((a) => a.status === statusFilter);
+
+  const counts = {
+    all: apps.length,
+    pending: apps.filter((a) => a.status === "pending").length,
+    approved: apps.filter((a) => a.status === "approved").length,
+    rejected: apps.filter((a) => a.status === "rejected").length,
+  };
 
   async function changeStatus(id: string, status: string, reject_reason?: string) {
     const updates: any = { status, updated_at: new Date().toISOString() };
@@ -104,18 +127,24 @@ export default function AdminPage() {
         </header>
         <section className="px-5 py-12 max-w-md mx-auto">
           <form onSubmit={handleLogin} className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h2 className="text-lg font-bold mb-2" style={{ color: "#11306E" }}>비밀번호 입력</h2>
+            <h2 className="text-lg font-bold mb-2" style={{ color: "#11306E" }}>본인 인증</h2>
             <p className="text-xs text-gray-500 mb-4">
-              신청자: 신청 시 설정한 비밀번호 입력<br />
-              관리자: 관리자 비밀번호 입력
+              <strong>신청자</strong>: 신청 시 입력한 연락처 + 비밀번호<br />
+              <strong>관리자</strong>: 연락처 비우고 관리자 비밀번호만 입력
             </p>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm mb-2"
+              placeholder="연락처 (예: 010-1234-5678)"
+            />
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm mb-3"
               placeholder="비밀번호"
-              autoFocus
             />
             {error && <p className="text-xs text-red-600 mb-3">⚠️ {error}</p>}
             <button type="submit" disabled={loading || !password}
@@ -141,11 +170,36 @@ export default function AdminPage() {
         </button>
       </header>
 
+      <div className="px-5 py-3 bg-white border-b border-gray-200 sticky top-[60px] z-30">
+        <div className="max-w-3xl mx-auto flex gap-2 overflow-x-auto">
+          {[
+            { key: "all", label: "전체", color: "#11306E", count: counts.all },
+            { key: "pending", label: "🟡 대기", color: "#92400E", count: counts.pending },
+            { key: "approved", label: "🟢 완료", color: "#065F46", count: counts.approved },
+            { key: "rejected", label: "🔴 불가", color: "#991B1B", count: counts.rejected },
+          ].map((f) => {
+            const active = statusFilter === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setStatusFilter(f.key)}
+                className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition ${active ? "text-white" : "bg-white text-gray-700 border border-gray-300"}`}
+                style={active ? { backgroundColor: f.color } : {}}
+              >
+                {f.label} <span className="opacity-70">{f.count}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <section className="px-5 py-6 max-w-3xl mx-auto space-y-3">
-        {apps.length === 0 ? (
-          <p className="text-center text-gray-500 py-12">신청 내역이 없습니다</p>
+        {filteredApps.length === 0 ? (
+          <p className="text-center text-gray-500 py-12">
+            {apps.length === 0 ? "신청 내역이 없습니다" : "해당 상태의 신청이 없습니다"}
+          </p>
         ) : (
-          apps.map((a) => <AppCard key={a.id} app={a} isAdmin={isAdmin} onChangeStatus={changeStatus} />)
+          filteredApps.map((a) => <AppCard key={a.id} app={a} isAdmin={isAdmin} onChangeStatus={changeStatus} />)
         )}
       </section>
     </main>
