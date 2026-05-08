@@ -4,9 +4,20 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { LOCALES, type Locale } from "@/data/i18n";
 
+type SubItem = { href: string; label: string; ready: boolean };
+type Category = {
+  key: string;
+  icon: string;
+  title: string;
+  desc: string;
+  bg: string;
+  subs: SubItem[];
+};
+
 export default function Home() {
   const [locale, setLocale] = useState<Locale>("ko");
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [openKey, setOpenKey] = useState<string | null>("alliance");
 
   useEffect(() => {
     const saved = localStorage.getItem("sj-alliance-locale") as Locale | null;
@@ -19,38 +30,40 @@ export default function Home() {
     localStorage.setItem("sj-alliance-locale", code);
   }
 
-  const categories = [
+  const categories: Category[] = [
     {
-      href: "/alliance",
+      key: "alliance",
       icon: "🍽",
-      titleKo: "SJ Alliance",
-      titleEn: "SJ Alliance",
-      descKo: "협약 업체 할인·지도·신청",
-      descEn: "Partnered stores · Map · Apply",
+      title: "SJ Alliance",
+      desc: "협약 업체 할인·지도·신청",
       bg: "#11306E",
-      accent: "#FFD500",
+      subs: [
+        { href: "/alliance/list", label: "업체 리스트", ready: true },
+        { href: "/map", label: "전체 지도", ready: true },
+        { href: "/alliance/apply", label: "업체 신청 (전단지 QR)", ready: false },
+      ],
     },
     {
-      href: "/lost",
+      key: "lost",
       icon: "📦",
-      titleKo: "분실물",
-      titleEn: "Lost & Found",
-      descKo: "분실물 보관·찾기·신청",
-      descEn: "Search · Register lost items",
+      title: "분실물",
+      desc: "분실물 보관·찾기·신청",
       bg: "#213A8F",
-      accent: "#FFD500",
-      ready: false,
+      subs: [
+        { href: "/lost/board", label: "분실물 게시판", ready: false },
+        { href: "/lost/register", label: "분실물 신고하기", ready: false },
+      ],
     },
     {
-      href: "/volunteer",
+      key: "volunteer",
       icon: "🤝",
-      titleKo: "서포터즈·봉사단",
-      titleEn: "Supporters & Volunteers",
-      descKo: "지원자 모집·신청서",
-      descEn: "Apply for programs",
+      title: "서포터즈·봉사단",
+      desc: "지원자 모집·신청서",
       bg: "#E6007E",
-      accent: "#FFD500",
-      ready: false,
+      subs: [
+        { href: "/volunteer/recruit", label: "모집 공고", ready: false },
+        { href: "/volunteer/apply", label: "지원서 작성", ready: false },
+      ],
     },
   ];
 
@@ -83,41 +96,60 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="px-5 py-10 text-white text-center" style={{ backgroundColor: "#213A8F" }}>
-        <h2 className="text-2xl font-bold mb-2">
+      <section className="px-5 py-8 text-white" style={{ backgroundColor: "#213A8F" }}>
+        <h2 className="text-xl font-bold mb-1">
           {locale === "ko" ? "어떤 정보가 필요하세요?" : "What are you looking for?"}
         </h2>
         <p className="text-sm" style={{ color: "#B5D4F4" }}>
-          {locale === "ko" ? "원하는 카테고리를 선택해주세요" : "Choose a category"}
+          {locale === "ko" ? "카테고리를 클릭해서 펼쳐보세요" : "Click a category to expand"}
         </p>
       </section>
 
-      <section className="px-5 py-8 max-w-3xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {categories.map((c) => {
-            const title = locale === "ko" ? c.titleKo : c.titleEn;
-            const desc = locale === "ko" ? c.descKo : c.descEn;
-            const Card = (
-              <div className="relative bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:border-gray-300 transition h-full">
-                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-4" style={{ backgroundColor: c.bg }}>
+      <section className="px-5 py-6 max-w-3xl mx-auto space-y-3">
+        {categories.map((c) => {
+          const isOpen = openKey === c.key;
+          return (
+            <div key={c.key} className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition">
+              <button
+                onClick={() => setOpenKey(isOpen ? null : c.key)}
+                className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-gray-50 transition"
+              >
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ backgroundColor: c.bg }}>
                   {c.icon}
                 </div>
-                <h3 className="text-lg font-bold mb-1" style={{ color: "#11306E" }}>{title}</h3>
-                <p className="text-sm text-gray-500 mb-3">{desc}</p>
-                <span className="text-sm font-medium" style={{ color: c.bg }}>
-                  {c.ready === false
-                    ? (locale === "ko" ? "🚧 준비중" : "🚧 Coming soon")
-                    : (locale === "ko" ? "바로가기 →" : "Open →")}
-                </span>
-              </div>
-            );
-            return c.ready === false ? (
-              <div key={c.href} className="opacity-60 cursor-not-allowed">{Card}</div>
-            ) : (
-              <Link key={c.href} href={c.href}>{Card}</Link>
-            );
-          })}
-        </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold leading-tight" style={{ color: "#11306E" }}>{c.title}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">{c.desc}</p>
+                </div>
+                <span className="text-gray-400 text-lg">{isOpen ? "▲" : "▼"}</span>
+              </button>
+
+              {isOpen && (
+                <div className="border-t border-gray-100 bg-gray-50 px-3 py-2">
+                  {c.subs.map((sub) => (
+                    sub.ready ? (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        className="block px-3 py-3 rounded-lg hover:bg-white transition flex items-center justify-between"
+                      >
+                        <span className="text-sm font-medium" style={{ color: "#11306E" }}>
+                          {sub.label}
+                        </span>
+                        <span className="text-gray-400">→</span>
+                      </Link>
+                    ) : (
+                      <div key={sub.href} className="px-3 py-3 flex items-center justify-between opacity-60">
+                        <span className="text-sm text-gray-500">{sub.label}</span>
+                        <span className="text-xs text-gray-400">🚧 준비중</span>
+                      </div>
+                    )
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </section>
 
       <footer className="mt-8 py-4 px-5 text-center text-xs text-white" style={{ backgroundColor: "#11306E" }}>
