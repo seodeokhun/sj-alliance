@@ -26,10 +26,10 @@ export default function AllianceHub() {
       bg: "#E6007E",
     },
     {
-      href: "/alliance/admin",
-      icon: "📋",
-      title: "신청 관리",
-      desc: "신청자 본인 비밀번호 또는 관리자 로그인",
+      href: "/alliance/applications",
+      icon: "📄",
+      title: "신청 내역",
+      desc: "신청 진행 상태 확인 (본인 비밀번호 입력)",
       bg: "#FFD500",
     },
   ];

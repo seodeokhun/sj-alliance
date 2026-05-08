@@ -29,67 +29,22 @@ const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }>
 };
 
 export default function AdminPage() {
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [authed, setAuthed] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [apps, setApps] = useState<App[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const isAdmin = true;
+  const authed = true;
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    // 관리자 모드: 비밀번호만 1234 입력 (연락처 비워둠)
-    if (!phone && password === ADMIN_PASSWORD) {
-      const { data, error: dbErr } = await supabase
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
         .from("alliance_applications")
         .select("*")
         .order("created_at", { ascending: false });
-      if (dbErr) {
-        setError(dbErr.message);
-        setLoading(false);
-        return;
-      }
       setApps(data || []);
-      setIsAdmin(true);
-      setAuthed(true);
       setLoading(false);
-      return;
-    }
-
-    // 신청자 모드: 연락처 + 비밀번호 일치
-    if (!phone || !password) {
-      setError("연락처와 비밀번호를 모두 입력해주세요");
-      setLoading(false);
-      return;
-    }
-
-    const { data, error: dbErr } = await supabase
-      .from("alliance_applications")
-      .select("*")
-      .eq("phone", phone)
-      .eq("edit_token", password)
-      .order("created_at", { ascending: false });
-
-    if (dbErr) {
-      setError(dbErr.message);
-      setLoading(false);
-      return;
-    }
-    if (!data || data.length === 0) {
-      setError("일치하는 신청 내역이 없습니다 (연락처·비밀번호 확인)");
-      setLoading(false);
-      return;
-    }
-    setApps(data);
-    setIsAdmin(false);
-    setAuthed(true);
-    setLoading(false);
-  }
+    })();
+  }, []);
 
   const filteredApps = statusFilter === "all"
     ? apps
@@ -118,56 +73,11 @@ export default function AdminPage() {
     setApps((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
   }
 
-  if (!authed) {
-    return (
-      <main className="min-h-screen bg-gray-50">
-        <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
-          <Link href="/alliance" className="text-white text-xl">←</Link>
-          <h1 className="text-white font-semibold">📋 신청 관리</h1>
-        </header>
-        <section className="px-5 py-12 max-w-md mx-auto">
-          <form onSubmit={handleLogin} className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h2 className="text-lg font-bold mb-2" style={{ color: "#11306E" }}>본인 인증</h2>
-            <p className="text-xs text-gray-500 mb-4">
-              <strong>신청자</strong>: 신청 시 입력한 연락처 + 비밀번호<br />
-              <strong>관리자</strong>: 연락처 비우고 관리자 비밀번호만 입력
-            </p>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm mb-2"
-              placeholder="연락처 (예: 010-1234-5678)"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm mb-3"
-              placeholder="비밀번호"
-            />
-            {error && <p className="text-xs text-red-600 mb-3">⚠️ {error}</p>}
-            <button type="submit" disabled={loading || !password}
-              className="w-full py-3 rounded-lg font-bold text-white disabled:opacity-50"
-              style={{ backgroundColor: "#11306E" }}>
-              {loading ? "확인 중..." : "조회"}
-            </button>
-          </form>
-        </section>
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-gray-50">
-      <header className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between" style={{ backgroundColor: "#11306E" }}>
-        <div className="flex items-center gap-3">
-          <Link href="/alliance" className="text-white text-xl">←</Link>
-          <h1 className="text-white font-semibold">📋 신청 관리 {isAdmin && <span className="text-xs ml-2" style={{ color: "#FFD500" }}>(관리자)</span>}</h1>
-        </div>
-        <button onClick={() => { setAuthed(false); setPassword(""); setApps([]); }} className="text-xs text-white opacity-80 hover:opacity-100">
-          로그아웃
-        </button>
+      <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
+        <Link href="/alliance" className="text-white text-xl">←</Link>
+        <h1 className="text-white font-semibold">📋 신청 관리 <span className="text-xs ml-2" style={{ color: "#FFD500" }}>(관리자)</span></h1>
       </header>
 
       <div className="px-5 py-3 bg-white border-b border-gray-200 sticky top-[60px] z-30">
