@@ -97,7 +97,8 @@ export default function Home() {
     <main className="min-h-screen bg-gray-50">
       <header className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: "#11306E" }}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm" style={{ backgroundColor: "#FFD500", color: "#11306E" }}>SJ</div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/sju-logo.png" alt="SJU" className="w-10 h-10 rounded-lg object-cover" />
           <div>
             <h1 className="text-white font-semibold text-base leading-tight">서정대학교</h1>
             <p className="text-xs leading-tight" style={{ color: "#FFD500" }}>학생 종합 정보</p>
