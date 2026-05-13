@@ -23,7 +23,6 @@ export default function LostRegister() {
   const [location, setLocation] = useState("");
   const [lostAt, setLostAt] = useState("");
   const [description, setDescription] = useState("");
-  const [nickname, setNickname] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -47,10 +46,13 @@ export default function LostRegister() {
     e.preventDefault();
     setError(null);
 
-    if (!title.trim() || !nickname.trim()) {
-      setError("제목과 닉네임은 필수입니다");
+    if (!title.trim()) {
+      setError("제목은 필수입니다");
       return;
     }
+
+    // 익명 닉네임 자동 생성 (4자리 숫자)
+    const autoNick = "익명" + Math.floor(1000 + Math.random() * 9000);
 
     setSubmitting(true);
 
@@ -80,7 +82,7 @@ export default function LostRegister() {
       lost_at: lostAt || null,
       description: description.trim() || null,
       images: imageUrls,
-      nickname: nickname.trim(),
+      nickname: autoNick,
     });
 
     setSubmitting(false);
@@ -224,18 +226,13 @@ export default function LostRegister() {
             />
           </div>
 
-          {/* 닉네임 */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">닉네임 *</label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm"
-              placeholder="익명1, 학생회 등"
-              maxLength={20}
-            />
-            <p className="text-[11px] text-gray-400 mt-1">실명·연락처는 노출되지 않습니다</p>
+          {/* 익명 안내 */}
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+            <p className="text-xs text-gray-600">
+              ℹ️ 익명 닉네임이 자동으로 부여됩니다 (예: 익명3492)
+              <br />
+              실명·연락처는 노출되지 않습니다.
+            </p>
           </div>
 
           {error && (
@@ -246,7 +243,7 @@ export default function LostRegister() {
 
           <button
             type="submit"
-            disabled={submitting || !title || !nickname}
+            disabled={submitting || !title}
             className="w-full py-3 rounded-lg font-bold text-white disabled:opacity-50"
             style={{ backgroundColor: "#11306E" }}
           >

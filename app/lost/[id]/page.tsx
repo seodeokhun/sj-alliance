@@ -43,7 +43,6 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
   const [viewImg, setViewImg] = useState<string | null>(null);
 
   // 댓글 작성용
-  const [commentNick, setCommentNick] = useState("");
   const [commentText, setCommentText] = useState("");
   const [posting, setPosting] = useState(false);
 
@@ -68,14 +67,17 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
 
   async function handlePostComment(e: React.FormEvent) {
     e.preventDefault();
-    if (!commentNick.trim() || !commentText.trim()) return;
+    if (!commentText.trim()) return;
     setPosting(true);
+
+    // 익명 닉네임 자동 생성
+    const autoNick = "익명" + Math.floor(1000 + Math.random() * 9000);
 
     const { data, error } = await supabase
       .from("lost_comments")
       .insert({
         item_id: id,
-        nickname: commentNick.trim(),
+        nickname: autoNick,
         content: commentText.trim(),
       })
       .select()
@@ -172,10 +174,22 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
 
           {/* 상세설명 */}
           {item.description && (
-            <div className="bg-gray-50 rounded-lg p-3 mb-2">
+            <div className="bg-gray-50 rounded-lg p-3 mb-4">
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{item.description}</p>
             </div>
           )}
+
+          {/* 1:1 채팅 버튼 (준비중) */}
+          <button
+            type="button"
+            onClick={() => alert("💬 1:1 채팅 기능은 곧 만나보실 수 있어요!\n현재는 댓글로 소통해주세요.")}
+            className="w-full py-3 rounded-lg font-bold text-white flex items-center justify-center gap-2 hover:opacity-90 transition"
+            style={{ backgroundColor: "#11306E" }}
+          >
+            <span>💬</span>
+            <span>작성자와 1:1 채팅하기</span>
+            <span className="text-[10px] font-normal opacity-80 ml-1">(준비중)</span>
+          </button>
         </div>
 
         {/* 댓글 섹션 */}
@@ -205,25 +219,17 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
 
           {/* 댓글 작성 */}
           <form onSubmit={handlePostComment} className="border-t border-gray-100 pt-4 space-y-2">
-            <input
-              type="text"
-              value={commentNick}
-              onChange={(e) => setCommentNick(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-xs"
-              placeholder="닉네임"
-              maxLength={20}
-            />
             <textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm resize-none"
-              placeholder="댓글을 입력하세요"
+              placeholder="댓글을 입력하세요 (익명으로 등록됩니다)"
               maxLength={300}
             />
             <button
               type="submit"
-              disabled={posting || !commentNick.trim() || !commentText.trim()}
+              disabled={posting || !commentText.trim()}
               className="w-full py-2 rounded-lg text-sm font-bold text-white disabled:opacity-50"
               style={{ backgroundColor: "#11306E" }}
             >
