@@ -11,6 +11,7 @@ type Category = {
   title: string;
   desc: string;
   bg: string;
+  ready?: boolean;
   subs: SubItem[];
 };
 
@@ -50,9 +51,34 @@ export default function Home() {
       title: "분실물",
       desc: "분실물 보관·찾기·신청",
       bg: "#213A8F",
+      ready: false,
       subs: [
         { href: "/lost/board", label: "분실물 게시판", ready: false },
         { href: "/lost/register", label: "분실물 신고하기", ready: false },
+      ],
+    },
+    {
+      key: "share",
+      icon: "🎁",
+      title: "나눔 게시판",
+      desc: "교재·생활용품 무료 나눔",
+      bg: "#10B981",
+      ready: false,
+      subs: [
+        { href: "/share/board", label: "나눔 게시판", ready: false },
+        { href: "/share/register", label: "나눔 등록하기", ready: false },
+      ],
+    },
+    {
+      key: "shuttle",
+      icon: "🚌",
+      title: "셔틀버스",
+      desc: "시간표·노선 지도·운행 안내",
+      bg: "#FFD500",
+      ready: false,
+      subs: [
+        { href: "/shuttle/schedule", label: "운행 시간표", ready: false },
+        { href: "/shuttle/map", label: "노선 지도", ready: false },
       ],
     },
     {
@@ -61,6 +87,7 @@ export default function Home() {
       title: "서포터즈·봉사단",
       desc: "지원자 모집·신청서",
       bg: "#E6007E",
+      ready: false,
       subs: [
         { href: "/volunteer/recruit", label: "모집 공고", ready: false },
         { href: "/volunteer/apply", label: "지원서 작성", ready: false },
@@ -119,7 +146,12 @@ export default function Home() {
                   {c.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-bold leading-tight" style={{ color: "#11306E" }}>{c.title}</h3>
+                  <h3 className="text-base font-bold leading-tight" style={{ color: "#11306E" }}>
+                    {c.title}
+                    {c.ready === false && (
+                      <span className="ml-2 text-[11px] font-medium text-gray-400 align-middle">(구현 준비중)</span>
+                    )}
+                  </h3>
                   <p className="text-xs text-gray-500 mt-0.5">{c.desc}</p>
                 </div>
                 <span className="text-gray-400 text-lg">{isOpen ? "▲" : "▼"}</span>
