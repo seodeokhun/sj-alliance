@@ -166,9 +166,6 @@ export default function Home() {
                       >
                         <span className="text-sm font-medium" style={{ color: "#11306E" }}>
                           {sub.label}
-                          {sub.note && (
-                            <span className="ml-2 text-[10px] font-normal text-gray-400">({sub.note})</span>
-                          )}
                         </span>
                         <span className="text-gray-400">→</span>
                       </Link>

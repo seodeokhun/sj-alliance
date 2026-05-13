@@ -24,6 +24,7 @@ export default function AllianceHub() {
       title: "협약 신청",
       desc: "협력 업체 등록을 원하시면 여기서 신청",
       bg: "#E6007E",
+      note: "페이지 분류 예정",
     },
     {
       href: "/alliance/applications",
@@ -31,6 +32,7 @@ export default function AllianceHub() {
       title: "신청 내역",
       desc: "신청 진행 상태 확인 (본인 비밀번호 입력)",
       bg: "#FFD500",
+      note: "페이지 분류 예정",
     },
   ];
 
@@ -65,6 +67,9 @@ export default function AllianceHub() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-lg font-semibold leading-tight mb-1" style={{ color: "#11306E" }}>
                   {item.title}
+                  {(item as { note?: string }).note && (
+                    <span className="ml-2 text-[11px] font-normal text-gray-400">({(item as { note?: string }).note})</span>
+                  )}
                 </h3>
                 <p className="text-sm text-gray-500">{item.desc}</p>
               </div>
