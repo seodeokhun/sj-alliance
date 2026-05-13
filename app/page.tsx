@@ -49,12 +49,11 @@ export default function Home() {
       key: "lost",
       icon: "📦",
       title: "분실물",
-      desc: "분실물 보관·찾기·신청",
+      desc: "분실물 게시판·신고",
       bg: "#213A8F",
-      ready: false,
       subs: [
-        { href: "/lost/board", label: "분실물 게시판", ready: false },
-        { href: "/lost/register", label: "분실물 신고하기", ready: false },
+        { href: "/lost/board", label: "분실물 게시판", ready: true },
+        { href: "/lost/register", label: "분실물 신고하기", ready: true },
       ],
     },
     {
