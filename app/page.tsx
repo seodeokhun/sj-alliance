@@ -62,10 +62,9 @@ export default function Home() {
       title: "나눔 게시판",
       desc: "교재·생활용품 무료 나눔",
       bg: "#10B981",
-      ready: false,
       subs: [
-        { href: "/share/board", label: "나눔 게시판", ready: false },
-        { href: "/share/register", label: "나눔 등록하기", ready: false },
+        { href: "/share/board", label: "나눔 게시판", ready: true },
+        { href: "/share/register", label: "나눔 등록하기", ready: true },
       ],
     },
     {
