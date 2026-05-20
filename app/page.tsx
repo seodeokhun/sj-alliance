@@ -41,8 +41,6 @@ export default function Home() {
       subs: [
         { href: "/alliance/list", label: "업체 리스트", ready: true },
         { href: "/map", label: "전체 지도", ready: true },
-        { href: "/alliance/apply", label: "협약 신청", ready: true, note: "페이지 분류 예정" },
-        { href: "/alliance/applications", label: "신청 내역", ready: true, note: "페이지 분류 예정" },
       ],
     },
     {

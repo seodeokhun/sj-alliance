@@ -18,22 +18,6 @@ export default function AllianceHub() {
       desc: "지도에서 카테고리별로 핀 확인",
       bg: "#213A8F",
     },
-    {
-      href: "/alliance/apply",
-      icon: "📝",
-      title: "협약 신청",
-      desc: "협력 업체 등록을 원하시면 여기서 신청",
-      bg: "#E6007E",
-      note: "페이지 분류 예정",
-    },
-    {
-      href: "/alliance/applications",
-      icon: "📄",
-      title: "신청 내역",
-      desc: "신청 진행 상태 확인 (본인 비밀번호 입력)",
-      bg: "#FFD500",
-      note: "페이지 분류 예정",
-    },
   ];
 
   return (
