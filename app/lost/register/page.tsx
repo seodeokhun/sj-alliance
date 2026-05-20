@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useLocale } from "@/lib/useLocale";
 import LangSwitcher from "@/components/LangSwitcher";
+import { translateFields } from "@/lib/translate";
 
 export default function LostRegister() {
   const router = useRouter();
@@ -77,6 +78,12 @@ export default function LostRegister() {
       imageUrls.push(urlData.publicUrl);
     }
 
+    // 자동 번역 (사용자 입력 텍스트를 다른 3개 언어로)
+    const fieldsToTranslate: Record<string, string> = { title: title.trim() };
+    if (location.trim()) fieldsToTranslate.location = location.trim();
+    if (description.trim()) fieldsToTranslate.description = description.trim();
+    const translations = await translateFields(fieldsToTranslate, locale);
+
     // 글 저장
     const { error: dbErr } = await supabase.from("lost_items").insert({
       type,
@@ -87,6 +94,8 @@ export default function LostRegister() {
       description: description.trim() || null,
       images: imageUrls,
       nickname: autoNick,
+      translations,
+      original_locale: locale,
     });
 
     setSubmitting(false);
@@ -234,6 +243,13 @@ export default function LostRegister() {
           <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
             <p className="text-xs text-gray-600 whitespace-pre-line">
               {t("anonymousNotice")}
+            </p>
+          </div>
+
+          {/* 자동 번역 안내 */}
+          <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3">
+            <p className="text-xs text-emerald-800">
+              {t("autoTranslateNotice")}
             </p>
           </div>
 

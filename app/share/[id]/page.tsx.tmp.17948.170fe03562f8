@@ -5,18 +5,18 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useLocale } from "@/lib/useLocale";
 import LangSwitcher from "@/components/LangSwitcher";
-import { getTranslatedField, translateFields, type Translations } from "@/lib/translate";
+import { getTranslatedField, type Translations } from "@/lib/translate";
 import type { Locale } from "@/data/i18n";
 
-type LostItem = {
+type ShareItem = {
   id: string;
-  type: "lost" | "found";
   title: string;
   category: string | null;
   location: string | null;
-  lost_at: string | null;
+  condition: string | null;
   description: string | null;
   images: string[];
+  status: "open" | "reserved" | "done";
   nickname: string;
   created_at: string;
   translations?: Translations;
@@ -29,44 +29,55 @@ type Comment = {
   nickname: string;
   content: string;
   created_at: string;
-  translations?: Translations;
-  original_locale?: Locale;
 };
 
 const CATEGORIES: Record<string, string> = {
-  wallet: "지갑·카드",
-  phone: "휴대폰·전자기기",
-  bag: "가방·옷",
-  umbrella: "우산",
-  key: "키·열쇠",
-  book: "도서·서류",
+  book: "교재·전공책",
+  furniture: "가구·생활용품",
+  electronics: "전자기기",
+  clothes: "의류",
+  kitchen: "식료품·키친",
   etc: "기타",
 };
 
-export default function LostDetail({ params }: { params: Promise<{ id: string }> }) {
+const CONDITIONS: Record<string, string> = {
+  new: "새것 같음",
+  good: "사용감 적음",
+  fair: "사용감 있음",
+  worn: "오래됨",
+};
+
+export default function ShareDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { locale, setLocale, t } = useLocale();
-  const [item, setItem] = useState<LostItem | null>(null);
+
+  const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }> = {
+    open:     { label: "🟢 " + t("shareStatusOpen"),     color: "#065F46", bg: "#D1FAE5" },
+    reserved: { label: "🟡 " + t("shareStatusReserved"), color: "#92400E", bg: "#FEF3C7" },
+    done:     { label: "⚪ " + t("shareStatusDone"),     color: "#6B7280", bg: "#F3F4F6" },
+  };
+
+  const [item, setItem] = useState<ShareItem | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewImg, setViewImg] = useState<string | null>(null);
   const [showOriginal, setShowOriginal] = useState(false);
 
-  // 댓글 작성용
   const [commentText, setCommentText] = useState("");
   const [posting, setPosting] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     (async () => {
       const { data: itemData } = await supabase
-        .from("lost_items")
+        .from("share_items")
         .select("*")
         .eq("id", id)
         .single();
       setItem(itemData);
 
       const { data: cmtData } = await supabase
-        .from("lost_comments")
+        .from("share_comments")
         .select("*")
         .eq("item_id", id)
         .order("created_at", { ascending: true });
@@ -80,20 +91,14 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
     if (!commentText.trim()) return;
     setPosting(true);
 
-    // 익명 닉네임 자동 생성
     const autoNick = "익명" + Math.floor(1000 + Math.random() * 9000);
 
-    // 댓글 자동 번역
-    const cmtTranslations = await translateFields({ content: commentText.trim() }, locale);
-
     const { data, error } = await supabase
-      .from("lost_comments")
+      .from("share_comments")
       .insert({
         item_id: id,
         nickname: autoNick,
         content: commentText.trim(),
-        translations: cmtTranslations,
-        original_locale: locale,
       })
       .select()
       .single();
@@ -109,6 +114,21 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
     }
   }
 
+  async function changeStatus(newStatus: "open" | "reserved" | "done") {
+    if (!item) return;
+    setUpdatingStatus(true);
+    const { error } = await supabase
+      .from("share_items")
+      .update({ status: newStatus })
+      .eq("id", id);
+    setUpdatingStatus(false);
+    if (error) {
+      alert("상태 변경 실패: " + error.message);
+      return;
+    }
+    setItem({ ...item, status: newStatus });
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -120,20 +140,18 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
   if (!item) {
     return (
       <main className="min-h-screen bg-gray-50">
-        <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
-          <Link href="/lost/board" className="text-white text-xl">←</Link>
-          <h1 className="text-white font-semibold">{t("lostBoardTitle")}</h1>
+        <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#10B981" }}>
+          <Link href="/share/board" className="text-white text-xl">←</Link>
+          <h1 className="text-white font-semibold">{t("shareBoardTitle")}</h1>
         </header>
         <p className="text-center text-gray-500 py-16">{t("notFound")}</p>
       </main>
     );
   }
 
-  const typeBadge = item.type === "lost"
-    ? { label: t("lostTypeLost"), color: "#991B1B", bg: "#FEE2E2" }
-    : { label: t("lostTypeFound"), color: "#065F46", bg: "#D1FAE5" };
+  const status = STATUS_LABEL[item.status] || STATUS_LABEL.open;
 
-  // 번역된 텍스트 (또는 원문 보기 모드일 때는 원본)
+  // 번역된 텍스트
   const orig = (item.original_locale || "ko") as Locale;
   const isTranslated = locale !== orig && item.translations?.[locale];
   const useOriginal = showOriginal || !isTranslated;
@@ -143,9 +161,9 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <header className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between gap-3" style={{ backgroundColor: "#11306E" }}>
+      <header className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between gap-3" style={{ backgroundColor: "#10B981" }}>
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <Link href="/lost/board" className="text-white text-xl flex-shrink-0">←</Link>
+          <Link href="/share/board" className="text-white text-xl flex-shrink-0">←</Link>
           <h1 className="text-white font-semibold truncate">{displayTitle}</h1>
         </div>
         <LangSwitcher locale={locale} onChange={setLocale} compact />
@@ -153,13 +171,16 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
 
       <section className="px-5 py-5 max-w-3xl mx-auto">
         <div className="bg-white border border-gray-200 rounded-2xl p-5">
-          {/* 뱃지 + 카테고리 */}
+          {/* 뱃지 + 카테고리 + 상태 */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ color: typeBadge.color, backgroundColor: typeBadge.bg }}>
-              {typeBadge.label}
+            <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ color: status.color, backgroundColor: status.bg }}>
+              {status.label}
             </span>
             {item.category && (
               <span className="text-xs text-gray-500">{CATEGORIES[item.category] || item.category}</span>
+            )}
+            {item.condition && (
+              <span className="text-xs text-gray-500">· {CONDITIONS[item.condition] || item.condition}</span>
             )}
           </div>
 
@@ -200,18 +221,15 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
             </div>
           )}
 
-          {/* 위치·시간 */}
+          {/* 위치 */}
           <div className="space-y-1.5 text-sm text-gray-700 mb-4">
-            {displayLocation && <p>📍 {displayLocation}</p>}
-            {item.lost_at && (
-              <p>🕒 {item.type === "lost" ? t("fieldLostAt") : t("fieldFoundAt")}: {new Date(item.lost_at).toLocaleString("ko-KR")}</p>
-            )}
+            {item.location && <p>📍 {t("fieldShareLocation")}: {item.location}</p>}
           </div>
 
           {/* 상세설명 */}
-          {displayDescription && (
+          {item.description && (
             <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{displayDescription}</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{item.description}</p>
             </div>
           )}
 
@@ -219,13 +237,43 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
           <button
             type="button"
             onClick={() => alert(t("chatAlert"))}
-            className="w-full py-3 rounded-lg font-bold text-white flex items-center justify-center gap-2 hover:opacity-90 transition"
-            style={{ backgroundColor: "#11306E" }}
+            className="w-full py-3 rounded-lg font-bold text-white flex items-center justify-center gap-2 hover:opacity-90 transition mb-3"
+            style={{ backgroundColor: "#10B981" }}
           >
             <span>💬</span>
             <span>{t("chatWithAuthor")}</span>
             <span className="text-[10px] font-normal opacity-80 ml-1">{t("chatComingSoon")}</span>
           </button>
+
+          {/* 상태 변경 (작성자 본인용) */}
+          <div className="border-t border-gray-100 pt-3 mt-3">
+            <div className="flex gap-2">
+              <button
+                onClick={() => changeStatus("open")}
+                disabled={updatingStatus || item.status === "open"}
+                className={`flex-1 py-2 rounded-lg text-xs font-medium disabled:opacity-50 ${item.status === "open" ? "text-white" : "bg-gray-100 text-gray-600"}`}
+                style={item.status === "open" ? { backgroundColor: "#065F46" } : {}}
+              >
+                🟢 {t("shareStatusOpen")}
+              </button>
+              <button
+                onClick={() => changeStatus("reserved")}
+                disabled={updatingStatus || item.status === "reserved"}
+                className={`flex-1 py-2 rounded-lg text-xs font-medium disabled:opacity-50 ${item.status === "reserved" ? "text-white" : "bg-gray-100 text-gray-600"}`}
+                style={item.status === "reserved" ? { backgroundColor: "#92400E" } : {}}
+              >
+                🟡 {t("shareStatusReserved")}
+              </button>
+              <button
+                onClick={() => changeStatus("done")}
+                disabled={updatingStatus || item.status === "done"}
+                className={`flex-1 py-2 rounded-lg text-xs font-medium disabled:opacity-50 ${item.status === "done" ? "text-white" : "bg-gray-100 text-gray-600"}`}
+                style={item.status === "done" ? { backgroundColor: "#6B7280" } : {}}
+              >
+                ⚪ {t("shareStatusDone")}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* 댓글 섹션 */}
@@ -234,40 +282,30 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
             💬 {t("comments")} {comments.length}
           </h3>
 
-          {/* 댓글 목록 */}
           {comments.length === 0 ? (
             <p className="text-xs text-gray-400 text-center py-6">{t("commentNone")}</p>
           ) : (
             <div className="space-y-3 mb-4">
-              {comments.map((c) => {
-                const cOrig = (c.original_locale || "ko") as Locale;
-                const cTranslated = locale !== cOrig && c.translations?.[locale];
-                const cContent = getTranslatedField(c.content, c.translations, cOrig, locale, "content");
-                return (
-                  <div key={c.id} className="border-b border-gray-100 pb-3 last:border-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-bold" style={{ color: "#11306E" }}>
-                        {c.nickname}
-                        {cTranslated && <span className="ml-1.5 text-[9px] text-gray-400 font-normal">🌐</span>}
-                      </span>
-                      <span className="text-[10px] text-gray-400">
-                        {new Date(c.created_at).toLocaleString("ko-KR")}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{cContent}</p>
+              {comments.map((c) => (
+                <div key={c.id} className="border-b border-gray-100 pb-3 last:border-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold" style={{ color: "#11306E" }}>{c.nickname}</span>
+                    <span className="text-[10px] text-gray-400">
+                      {new Date(c.created_at).toLocaleString("ko-KR")}
+                    </span>
                   </div>
-                );
-              })}
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{c.content}</p>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* 댓글 작성 */}
           <form onSubmit={handlePostComment} className="border-t border-gray-100 pt-4 space-y-2">
             <textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-emerald-500 text-sm resize-none"
               placeholder={t("commentPlaceholder")}
               maxLength={300}
             />
@@ -275,7 +313,7 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
               type="submit"
               disabled={posting || !commentText.trim()}
               className="w-full py-2 rounded-lg text-sm font-bold text-white disabled:opacity-50"
-              style={{ backgroundColor: "#11306E" }}
+              style={{ backgroundColor: "#10B981" }}
             >
               {posting ? t("submitting") : t("commentSubmit")}
             </button>

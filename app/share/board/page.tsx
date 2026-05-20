@@ -5,6 +5,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useLocale } from "@/lib/useLocale";
 import LangSwitcher from "@/components/LangSwitcher";
+import { getTranslatedField, type Translations } from "@/lib/translate";
+import type { Locale } from "@/data/i18n";
 
 type ShareItem = {
   id: string;
@@ -16,6 +18,8 @@ type ShareItem = {
   status: "open" | "reserved" | "done";
   nickname: string;
   created_at: string;
+  translations?: Translations;
+  original_locale?: Locale;
 };
 
 export default function ShareBoard() {
@@ -154,6 +158,10 @@ export default function ShareBoard() {
               const status = STATUS_LABEL[item.status] || STATUS_LABEL.open;
               const categoryLabel = CATEGORIES.find((c) => c.key === item.category)?.label || t("shareCatEtc");
               const isDone = item.status === "done";
+              const orig = (item.original_locale || "ko") as Locale;
+              const titleDisplay = getTranslatedField(item.title, item.translations, orig, locale, "title");
+              const locationDisplay = getTranslatedField(item.location, item.translations, orig, locale, "location");
+              const isTranslated = locale !== orig && item.translations?.[locale];
 
               return (
                 <Link
@@ -176,10 +184,13 @@ export default function ShareBoard() {
                         <span className="text-[10px] text-gray-500">{categoryLabel}</span>
                       </div>
                       <h3 className="text-sm font-bold leading-tight mb-1 line-clamp-2" style={{ color: "#11306E" }}>
-                        {item.title}
+                        {titleDisplay}
+                        {isTranslated && (
+                          <span className="ml-1.5 text-[9px] font-normal text-gray-400 align-middle">🌐</span>
+                        )}
                       </h3>
-                      {item.location && (
-                        <p className="text-xs text-gray-500 truncate">📍 {item.location}</p>
+                      {locationDisplay && (
+                        <p className="text-xs text-gray-500 truncate">📍 {locationDisplay}</p>
                       )}
                       <p className="text-[11px] text-gray-400 mt-1">
                         {item.nickname} · {new Date(item.created_at).toLocaleDateString("ko-KR")}

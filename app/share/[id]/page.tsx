@@ -5,6 +5,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useLocale } from "@/lib/useLocale";
 import LangSwitcher from "@/components/LangSwitcher";
+import { getTranslatedField, translateFields, type Translations } from "@/lib/translate";
+import type { Locale } from "@/data/i18n";
 
 type ShareItem = {
   id: string;
@@ -17,6 +19,8 @@ type ShareItem = {
   status: "open" | "reserved" | "done";
   nickname: string;
   created_at: string;
+  translations?: Translations;
+  original_locale?: Locale;
 };
 
 type Comment = {
@@ -25,6 +29,8 @@ type Comment = {
   nickname: string;
   content: string;
   created_at: string;
+  translations?: Translations;
+  original_locale?: Locale;
 };
 
 const CATEGORIES: Record<string, string> = {
@@ -57,6 +63,7 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewImg, setViewImg] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
 
   const [commentText, setCommentText] = useState("");
   const [posting, setPosting] = useState(false);
@@ -88,12 +95,17 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
 
     const autoNick = "익명" + Math.floor(1000 + Math.random() * 9000);
 
+    // 댓글 자동 번역
+    const cmtTranslations = await translateFields({ content: commentText.trim() }, locale);
+
     const { data, error } = await supabase
       .from("share_comments")
       .insert({
         item_id: id,
         nickname: autoNick,
         content: commentText.trim(),
+        translations: cmtTranslations,
+        original_locale: locale,
       })
       .select()
       .single();
@@ -146,12 +158,20 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
 
   const status = STATUS_LABEL[item.status] || STATUS_LABEL.open;
 
+  // 번역된 텍스트
+  const orig = (item.original_locale || "ko") as Locale;
+  const isTranslated = locale !== orig && item.translations?.[locale];
+  const useOriginal = showOriginal || !isTranslated;
+  const displayTitle = useOriginal ? item.title : getTranslatedField(item.title, item.translations, orig, locale, "title");
+  const displayLocation = useOriginal ? item.location : getTranslatedField(item.location, item.translations, orig, locale, "location");
+  const displayDescription = useOriginal ? item.description : getTranslatedField(item.description, item.translations, orig, locale, "description");
+
   return (
     <main className="min-h-screen bg-gray-50">
       <header className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between gap-3" style={{ backgroundColor: "#10B981" }}>
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Link href="/share/board" className="text-white text-xl flex-shrink-0">←</Link>
-          <h1 className="text-white font-semibold truncate">{item.title}</h1>
+          <h1 className="text-white font-semibold truncate">{displayTitle}</h1>
         </div>
         <LangSwitcher locale={locale} onChange={setLocale} compact />
       </header>
@@ -173,13 +193,23 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
 
           {/* 제목 */}
           <h2 className="text-xl font-bold leading-tight mb-2" style={{ color: "#11306E" }}>
-            {item.title}
+            {displayTitle}
           </h2>
 
-          {/* 작성자·날짜 */}
-          <p className="text-xs text-gray-500 mb-4">
-            👤 {item.nickname} · {new Date(item.created_at).toLocaleString("ko-KR")}
-          </p>
+          {/* 작성자·날짜 + 번역 토글 */}
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <p className="text-xs text-gray-500">
+              👤 {item.nickname} · {new Date(item.created_at).toLocaleString("ko-KR")}
+            </p>
+            {isTranslated && (
+              <button
+                onClick={() => setShowOriginal(!showOriginal)}
+                className="text-[11px] px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium"
+              >
+                🌐 {showOriginal ? t("viewTranslation") : t("viewOriginal")}
+              </button>
+            )}
+          </div>
 
           {/* 사진 갤러리 */}
           {item.images && item.images.length > 0 && (
@@ -200,13 +230,13 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
 
           {/* 위치 */}
           <div className="space-y-1.5 text-sm text-gray-700 mb-4">
-            {item.location && <p>📍 {t("fieldShareLocation")}: {item.location}</p>}
+            {displayLocation && <p>📍 {t("fieldShareLocation")}: {displayLocation}</p>}
           </div>
 
           {/* 상세설명 */}
-          {item.description && (
+          {displayDescription && (
             <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{item.description}</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{displayDescription}</p>
             </div>
           )}
 
@@ -263,17 +293,25 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
             <p className="text-xs text-gray-400 text-center py-6">{t("commentNone")}</p>
           ) : (
             <div className="space-y-3 mb-4">
-              {comments.map((c) => (
-                <div key={c.id} className="border-b border-gray-100 pb-3 last:border-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold" style={{ color: "#11306E" }}>{c.nickname}</span>
-                    <span className="text-[10px] text-gray-400">
-                      {new Date(c.created_at).toLocaleString("ko-KR")}
-                    </span>
+              {comments.map((c) => {
+                const cOrig = (c.original_locale || "ko") as Locale;
+                const cTranslated = locale !== cOrig && c.translations?.[locale];
+                const cContent = getTranslatedField(c.content, c.translations, cOrig, locale, "content");
+                return (
+                  <div key={c.id} className="border-b border-gray-100 pb-3 last:border-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold" style={{ color: "#11306E" }}>
+                        {c.nickname}
+                        {cTranslated && <span className="ml-1.5 text-[9px] text-gray-400 font-normal">🌐</span>}
+                      </span>
+                      <span className="text-[10px] text-gray-400">
+                        {new Date(c.created_at).toLocaleString("ko-KR")}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{cContent}</p>
                   </div>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{c.content}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

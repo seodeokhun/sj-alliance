@@ -56,10 +56,34 @@ export const TEXTS = {
     uz: "Yuborish",
   },
   submitting: {
-    ko: "등록 중...",
-    en: "Submitting...",
-    vi: "Đang gửi...",
-    uz: "Yuborilmoqda...",
+    ko: "번역·등록 중...",
+    en: "Translating & submitting...",
+    vi: "Đang dịch & gửi...",
+    uz: "Tarjima qilinmoqda & yuborilmoqda...",
+  },
+  autoTranslateNotice: {
+    ko: "✨ 글 등록 시 영어·베트남어·우즈벡어로 자동 번역됩니다.",
+    en: "✨ Your post will be auto-translated to Korean, Vietnamese, and Uzbek.",
+    vi: "✨ Bài viết sẽ được tự động dịch sang tiếng Hàn, Anh, Uzbek.",
+    uz: "✨ Postingiz koreys, ingliz va vyetnam tillariga avtomatik tarjima qilinadi.",
+  },
+  viewOriginal: {
+    ko: "원문 보기",
+    en: "View original",
+    vi: "Xem bản gốc",
+    uz: "Asl matnni koʻrish",
+  },
+  viewTranslation: {
+    ko: "번역 보기",
+    en: "View translation",
+    vi: "Xem bản dịch",
+    uz: "Tarjimani koʻrish",
+  },
+  autoTranslated: {
+    ko: "자동 번역됨",
+    en: "Auto-translated",
+    vi: "Dịch tự động",
+    uz: "Avtomatik tarjima",
   },
   cancel: {
     ko: "취소",

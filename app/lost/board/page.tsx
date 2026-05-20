@@ -5,6 +5,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useLocale } from "@/lib/useLocale";
 import LangSwitcher from "@/components/LangSwitcher";
+import { getTranslatedField, type Translations } from "@/lib/translate";
+import type { Locale } from "@/data/i18n";
 
 type LostItem = {
   id: string;
@@ -16,6 +18,8 @@ type LostItem = {
   images: string[];
   nickname: string;
   created_at: string;
+  translations?: Translations;
+  original_locale?: Locale;
 };
 
 export default function LostBoard() {
@@ -52,8 +56,18 @@ export default function LostBoard() {
   const filtered = items.filter((i) => {
     if (typeFilter !== "all" && i.type !== typeFilter) return false;
     if (categoryFilter !== "all" && i.category !== categoryFilter) return false;
-    if (search && !i.title.toLowerCase().includes(search.toLowerCase()) &&
-        !(i.location || "").toLowerCase().includes(search.toLowerCase())) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const orig = i.original_locale || "ko";
+      const titleNow = getTranslatedField(i.title, i.translations, orig as Locale, locale, "title");
+      const locationNow = getTranslatedField(i.location, i.translations, orig as Locale, locale, "location");
+      const hit =
+        titleNow.toLowerCase().includes(q) ||
+        i.title.toLowerCase().includes(q) ||
+        locationNow.toLowerCase().includes(q) ||
+        (i.location || "").toLowerCase().includes(q);
+      if (!hit) return false;
+    }
     return true;
   });
 
@@ -145,6 +159,10 @@ export default function LostBoard() {
                 ? { label: t("lostTypeLost"), color: "#991B1B", bg: "#FEE2E2" }
                 : { label: t("lostTypeFound"),     color: "#065F46", bg: "#D1FAE5" };
               const categoryLabel = CATEGORIES.find((c) => c.key === item.category)?.label || t("lostCatEtc");
+              const orig = (item.original_locale || "ko") as Locale;
+              const titleDisplay = getTranslatedField(item.title, item.translations, orig, locale, "title");
+              const locationDisplay = getTranslatedField(item.location, item.translations, orig, locale, "location");
+              const isTranslated = locale !== orig && item.translations?.[locale];
 
               return (
                 <Link
@@ -167,10 +185,13 @@ export default function LostBoard() {
                         <span className="text-[10px] text-gray-500">{categoryLabel}</span>
                       </div>
                       <h3 className="text-sm font-bold leading-tight mb-1 line-clamp-2" style={{ color: "#11306E" }}>
-                        {item.title}
+                        {titleDisplay}
+                        {isTranslated && (
+                          <span className="ml-1.5 text-[9px] font-normal text-gray-400 align-middle">🌐</span>
+                        )}
                       </h3>
-                      {item.location && (
-                        <p className="text-xs text-gray-500 truncate">📍 {item.location}</p>
+                      {locationDisplay && (
+                        <p className="text-xs text-gray-500 truncate">📍 {locationDisplay}</p>
                       )}
                       <p className="text-[11px] text-gray-400 mt-1">
                         {item.nickname} · {new Date(item.created_at).toLocaleDateString("ko-KR")}
