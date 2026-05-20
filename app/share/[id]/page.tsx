@@ -29,6 +29,7 @@ type Comment = {
   nickname: string;
   content: string;
   created_at: string;
+  parent_id?: string | null;
   translations?: Translations;
   original_locale?: Locale;
 };
@@ -69,6 +70,11 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
   const [posting, setPosting] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
+  // 답글 작성용
+  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [replyPosting, setReplyPosting] = useState(false);
+
   useEffect(() => {
     (async () => {
       const { data: itemData } = await supabase
@@ -106,6 +112,7 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
         content: commentText.trim(),
         translations: cmtTranslations,
         original_locale: locale,
+        parent_id: null,
       })
       .select()
       .single();
@@ -118,6 +125,39 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
     if (data) {
       setComments((prev) => [...prev, data]);
       setCommentText("");
+    }
+  }
+
+  async function handlePostReply(e: React.FormEvent, parentId: string) {
+    e.preventDefault();
+    if (!replyText.trim()) return;
+    setReplyPosting(true);
+
+    const autoNick = "익명" + Math.floor(1000 + Math.random() * 9000);
+    const cmtTranslations = await translateFields({ content: replyText.trim() }, locale);
+
+    const { data, error } = await supabase
+      .from("share_comments")
+      .insert({
+        item_id: id,
+        nickname: autoNick,
+        content: replyText.trim(),
+        translations: cmtTranslations,
+        original_locale: locale,
+        parent_id: parentId,
+      })
+      .select()
+      .single();
+
+    setReplyPosting(false);
+    if (error) {
+      alert("답글 작성 실패: " + error.message);
+      return;
+    }
+    if (data) {
+      setComments((prev) => [...prev, data]);
+      setReplyText("");
+      setReplyTo(null);
     }
   }
 
@@ -300,10 +340,13 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
             <p className="text-xs text-gray-400 text-center py-6">{t("commentNone")}</p>
           ) : (
             <div className="space-y-3 mb-4">
-              {comments.map((c) => {
+              {comments.filter((c) => !c.parent_id).map((c) => {
                 const cOrig = (c.original_locale || "ko") as Locale;
                 const cTranslated = locale !== cOrig && c.translations?.[locale];
                 const cContent = getTranslatedField(c.content, c.translations, cOrig, locale, "content");
+                const replies = comments.filter((r) => r.parent_id === c.id);
+                const isReplying = replyTo === c.id;
+
                 return (
                   <div key={c.id} className="border-b border-gray-100 pb-3 last:border-0">
                     <div className="flex items-center justify-between mb-1">
@@ -315,7 +358,76 @@ export default function ShareDetail({ params }: { params: Promise<{ id: string }
                         {new Date(c.created_at).toLocaleString(locale === "ko" ? "ko-KR" : locale === "vi" ? "vi-VN" : locale === "uz" ? "uz-UZ" : "en-US")}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{cContent}</p>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap mb-2">{cContent}</p>
+
+                    <button
+                      type="button"
+                      onClick={() => { setReplyTo(isReplying ? null : c.id); setReplyText(""); }}
+                      className="text-[11px] text-gray-500 hover:text-gray-700 font-medium"
+                    >
+                      ↩️ {isReplying ? t("cancel") : t("reply")}
+                    </button>
+
+                    {replies.length > 0 && (
+                      <div className="mt-3 ml-6 pl-3 border-l-2 border-gray-100 space-y-2">
+                        {replies.map((r) => {
+                          const rOrig = (r.original_locale || "ko") as Locale;
+                          const rTranslated = locale !== rOrig && r.translations?.[locale];
+                          const rContent = getTranslatedField(r.content, r.translations, rOrig, locale, "content");
+                          return (
+                            <div key={r.id}>
+                              <div className="flex items-center justify-between mb-0.5">
+                                <span className="text-[11px] font-bold" style={{ color: "#11306E" }}>
+                                  ↪ {r.nickname}
+                                  {rTranslated && <span className="ml-1 text-[9px] text-gray-400 font-normal">🌐</span>}
+                                </span>
+                                <span className="text-[9px] text-gray-400">
+                                  {new Date(r.created_at).toLocaleString(locale === "ko" ? "ko-KR" : locale === "vi" ? "vi-VN" : locale === "uz" ? "uz-UZ" : "en-US")}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-700 whitespace-pre-wrap">{rContent}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {isReplying && (
+                      <form
+                        onSubmit={(e) => handlePostReply(e, c.id)}
+                        className="mt-3 ml-6 pl-3 border-l-2 border-emerald-200 space-y-2"
+                      >
+                        <p className="text-[10px] text-gray-500">
+                          {t("replyTo")}: <span className="font-bold">{c.nickname}</span>
+                        </p>
+                        <textarea
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          rows={2}
+                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs resize-none outline-none focus:border-emerald-500"
+                          placeholder={t("replyPlaceholder")}
+                          maxLength={300}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => { setReplyTo(null); setReplyText(""); }}
+                            className="flex-1 py-1.5 rounded text-[11px] border border-gray-300 text-gray-600"
+                          >
+                            {t("cancel")}
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={replyPosting || !replyText.trim()}
+                            className="flex-1 py-1.5 rounded text-[11px] font-bold text-white disabled:opacity-50"
+                            style={{ backgroundColor: "#10B981" }}
+                          >
+                            {replyPosting ? t("submitting") : t("replySubmit")}
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
                 );
               })}

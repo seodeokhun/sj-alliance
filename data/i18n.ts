@@ -601,6 +601,30 @@ export const TEXTS = {
     vi: "Đăng bình luận",
     uz: "Izoh yuborish",
   },
+  reply: {
+    ko: "답글",
+    en: "Reply",
+    vi: "Trả lời",
+    uz: "Javob berish",
+  },
+  replyTo: {
+    ko: "답글 대상",
+    en: "Replying to",
+    vi: "Trả lời",
+    uz: "Javob",
+  },
+  replySubmit: {
+    ko: "답글 등록",
+    en: "Post reply",
+    vi: "Đăng trả lời",
+    uz: "Javobni yuborish",
+  },
+  replyPlaceholder: {
+    ko: "답글을 입력하세요 (익명으로 등록됩니다)",
+    en: "Write a reply (posted anonymously)",
+    vi: "Viết câu trả lời (đăng ẩn danh)",
+    uz: "Javob yozing (anonim joylashtiriladi)",
+  },
   chatWithAuthor: {
     ko: "작성자와 1:1 채팅하기",
     en: "Chat with author",
