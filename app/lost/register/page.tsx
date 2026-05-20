@@ -4,19 +4,23 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-
-const CATEGORIES = [
-  { key: "wallet", label: "지갑·카드" },
-  { key: "phone", label: "휴대폰·전자기기" },
-  { key: "bag", label: "가방·옷" },
-  { key: "umbrella", label: "우산" },
-  { key: "key", label: "키·열쇠" },
-  { key: "book", label: "도서·서류" },
-  { key: "etc", label: "기타" },
-];
+import { useLocale } from "@/lib/useLocale";
+import LangSwitcher from "@/components/LangSwitcher";
 
 export default function LostRegister() {
   const router = useRouter();
+  const { locale, setLocale, t } = useLocale();
+
+  const CATEGORIES = [
+    { key: "wallet", label: t("lostCatWallet") },
+    { key: "phone", label: t("lostCatPhone") },
+    { key: "bag", label: t("lostCatBag") },
+    { key: "umbrella", label: t("lostCatUmbrella") },
+    { key: "key", label: t("lostCatKey") },
+    { key: "book", label: t("lostCatBook") },
+    { key: "etc", label: t("lostCatEtc") },
+  ];
+
   const [type, setType] = useState<"lost" | "found">("lost");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -97,16 +101,19 @@ export default function LostRegister() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
-        <Link href="/lost/board" className="text-white text-xl">←</Link>
-        <h1 className="text-white font-semibold">📦 분실물 글쓰기</h1>
+      <header className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between gap-3" style={{ backgroundColor: "#11306E" }}>
+        <div className="flex items-center gap-3">
+          <Link href="/lost/board" className="text-white text-xl">←</Link>
+          <h1 className="text-white font-semibold">📦 {t("lostRegisterTitle")}</h1>
+        </div>
+        <LangSwitcher locale={locale} onChange={setLocale} compact />
       </header>
 
       <section className="px-5 py-6 max-w-2xl mx-auto">
         <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
           {/* 유형 선택 */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">유형 *</label>
+            <label className="block text-xs font-bold text-gray-700 mb-2">{t("fieldType")} *</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -114,7 +121,7 @@ export default function LostRegister() {
                 className={`flex-1 py-3 rounded-lg text-sm font-bold transition ${type === "lost" ? "text-white" : "bg-gray-100 text-gray-600"}`}
                 style={type === "lost" ? { backgroundColor: "#991B1B" } : {}}
               >
-                🔍 잃어버렸어요
+                {t("lostTypeLost")}
               </button>
               <button
                 type="button"
@@ -122,27 +129,26 @@ export default function LostRegister() {
                 className={`flex-1 py-3 rounded-lg text-sm font-bold transition ${type === "found" ? "text-white" : "bg-gray-100 text-gray-600"}`}
                 style={type === "found" ? { backgroundColor: "#065F46" } : {}}
               >
-                ✋ 주웠어요
+                {t("lostTypeFound")}
               </button>
             </div>
           </div>
 
           {/* 제목 */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">제목 *</label>
+            <label className="block text-xs font-bold text-gray-700 mb-2">{t("fieldTitle")} *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-3 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm"
-              placeholder="예: 검은색 장지갑 잃어버렸어요"
               maxLength={80}
             />
           </div>
 
           {/* 카테고리 */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">카테고리</label>
+            <label className="block text-xs font-bold text-gray-700 mb-2">{t("fieldCategory")}</label>
             <div className="flex gap-1.5 flex-wrap">
               {CATEGORIES.map((c) => {
                 const active = category === c.key;
@@ -163,20 +169,19 @@ export default function LostRegister() {
 
           {/* 위치 */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">위치</label>
+            <label className="block text-xs font-bold text-gray-700 mb-2">{t("fieldLocation")}</label>
             <input
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="w-full px-3 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm"
-              placeholder="예: 본관 1층 자판기 앞"
             />
           </div>
 
           {/* 시간 */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-2">
-              {type === "lost" ? "분실 시간" : "발견 시간"}
+              {type === "lost" ? t("fieldLostAt") : t("fieldFoundAt")}
             </label>
             <input
               type="datetime-local"
@@ -188,7 +193,7 @@ export default function LostRegister() {
 
           {/* 사진 */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">사진 (최대 4장)</label>
+            <label className="block text-xs font-bold text-gray-700 mb-2">{t("fieldImages")}</label>
             {previews.length > 0 && (
               <div className="grid grid-cols-4 gap-2 mb-2">
                 {previews.map((src, i) => (
@@ -208,7 +213,7 @@ export default function LostRegister() {
             )}
             {files.length < 4 && (
               <label className="block w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-center text-sm text-gray-500 cursor-pointer hover:border-gray-400">
-                + 사진 추가
+                {t("addPhoto")}
                 <input type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
               </label>
             )}
@@ -216,22 +221,19 @@ export default function LostRegister() {
 
           {/* 상세설명 */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">상세 설명</label>
+            <label className="block text-xs font-bold text-gray-700 mb-2">{t("fieldDescription")}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               className="w-full px-3 py-2.5 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm resize-none"
-              placeholder="물건의 특징, 보관 위치, 추가 정보 등"
             />
           </div>
 
           {/* 익명 안내 */}
           <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-            <p className="text-xs text-gray-600">
-              ℹ️ 익명 닉네임이 자동으로 부여됩니다 (예: 익명3492)
-              <br />
-              실명·연락처는 노출되지 않습니다.
+            <p className="text-xs text-gray-600 whitespace-pre-line">
+              {t("anonymousNotice")}
             </p>
           </div>
 
@@ -247,7 +249,7 @@ export default function LostRegister() {
             className="w-full py-3 rounded-lg font-bold text-white disabled:opacity-50"
             style={{ backgroundColor: "#11306E" }}
           >
-            {submitting ? "등록 중..." : "등록하기"}
+            {submitting ? t("submitting") : t("submit")}
           </button>
         </form>
       </section>

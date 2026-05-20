@@ -3,6 +3,8 @@
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useLocale } from "@/lib/useLocale";
+import LangSwitcher from "@/components/LangSwitcher";
 
 type LostItem = {
   id: string;
@@ -37,6 +39,7 @@ const CATEGORIES: Record<string, string> = {
 
 export default function LostDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { locale, setLocale, t } = useLocale();
   const [item, setItem] = useState<LostItem | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +100,7 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">불러오는 중...</p>
+        <p className="text-gray-500">{t("loading")}</p>
       </main>
     );
   }
@@ -107,22 +110,25 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
       <main className="min-h-screen bg-gray-50">
         <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
           <Link href="/lost/board" className="text-white text-xl">←</Link>
-          <h1 className="text-white font-semibold">분실물 상세</h1>
+          <h1 className="text-white font-semibold">{t("lostBoardTitle")}</h1>
         </header>
-        <p className="text-center text-gray-500 py-16">게시글을 찾을 수 없습니다</p>
+        <p className="text-center text-gray-500 py-16">{t("notFound")}</p>
       </main>
     );
   }
 
   const typeBadge = item.type === "lost"
-    ? { label: "🔍 잃어버렸어요", color: "#991B1B", bg: "#FEE2E2" }
-    : { label: "✋ 주웠어요", color: "#065F46", bg: "#D1FAE5" };
+    ? { label: t("lostTypeLost"), color: "#991B1B", bg: "#FEE2E2" }
+    : { label: t("lostTypeFound"), color: "#065F46", bg: "#D1FAE5" };
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
-        <Link href="/lost/board" className="text-white text-xl">←</Link>
-        <h1 className="text-white font-semibold truncate flex-1">{item.title}</h1>
+      <header className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between gap-3" style={{ backgroundColor: "#11306E" }}>
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <Link href="/lost/board" className="text-white text-xl flex-shrink-0">←</Link>
+          <h1 className="text-white font-semibold truncate">{item.title}</h1>
+        </div>
+        <LangSwitcher locale={locale} onChange={setLocale} compact />
       </header>
 
       <section className="px-5 py-5 max-w-3xl mx-auto">
@@ -182,25 +188,25 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
           {/* 1:1 채팅 버튼 (준비중) */}
           <button
             type="button"
-            onClick={() => alert("💬 1:1 채팅 기능은 곧 만나보실 수 있어요!\n현재는 댓글로 소통해주세요.")}
+            onClick={() => alert(t("chatAlert"))}
             className="w-full py-3 rounded-lg font-bold text-white flex items-center justify-center gap-2 hover:opacity-90 transition"
             style={{ backgroundColor: "#11306E" }}
           >
             <span>💬</span>
-            <span>작성자와 1:1 채팅하기</span>
-            <span className="text-[10px] font-normal opacity-80 ml-1">(준비중)</span>
+            <span>{t("chatWithAuthor")}</span>
+            <span className="text-[10px] font-normal opacity-80 ml-1">{t("chatComingSoon")}</span>
           </button>
         </div>
 
         {/* 댓글 섹션 */}
         <div className="bg-white border border-gray-200 rounded-2xl p-5 mt-4">
           <h3 className="text-base font-bold mb-4" style={{ color: "#11306E" }}>
-            💬 댓글 {comments.length}
+            💬 {t("comments")} {comments.length}
           </h3>
 
           {/* 댓글 목록 */}
           {comments.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-6">아직 댓글이 없습니다</p>
+            <p className="text-xs text-gray-400 text-center py-6">{t("commentNone")}</p>
           ) : (
             <div className="space-y-3 mb-4">
               {comments.map((c) => (
@@ -224,7 +230,7 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
               onChange={(e) => setCommentText(e.target.value)}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm resize-none"
-              placeholder="댓글을 입력하세요 (익명으로 등록됩니다)"
+              placeholder={t("commentPlaceholder")}
               maxLength={300}
             />
             <button
@@ -233,7 +239,7 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
               className="w-full py-2 rounded-lg text-sm font-bold text-white disabled:opacity-50"
               style={{ backgroundColor: "#11306E" }}
             >
-              {posting ? "등록 중..." : "댓글 등록"}
+              {posting ? t("submitting") : t("commentSubmit")}
             </button>
           </form>
         </div>

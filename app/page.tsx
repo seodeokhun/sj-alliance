@@ -1,92 +1,81 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { LOCALES, type Locale } from "@/data/i18n";
+import { useState } from "react";
+import { useLocale } from "@/lib/useLocale";
+import LangSwitcher from "@/components/LangSwitcher";
 
-type SubItem = { href: string; label: string; ready: boolean; note?: string };
+type SubItem = { href: string; labelKey: any; ready: boolean };
 type Category = {
   key: string;
   icon: string;
-  title: string;
-  desc: string;
+  titleKey: any;
+  descKey: any;
   bg: string;
   ready?: boolean;
   subs: SubItem[];
 };
 
 export default function Home() {
-  const [locale, setLocale] = useState<Locale>("ko");
-  const [showLangMenu, setShowLangMenu] = useState(false);
+  const { locale, setLocale, t } = useLocale();
   const [openKey, setOpenKey] = useState<string | null>("alliance");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("sj-alliance-locale") as Locale | null;
-    if (saved && LOCALES.find((l) => l.code === saved)) setLocale(saved);
-  }, []);
-
-  function changeLocale(code: Locale) {
-    setLocale(code);
-    setShowLangMenu(false);
-    localStorage.setItem("sj-alliance-locale", code);
-  }
 
   const categories: Category[] = [
     {
       key: "alliance",
       icon: "🍽",
-      title: "SJ Alliance",
-      desc: "협약 업체 할인·지도·신청",
+      titleKey: "catAlliance",
+      descKey: "catAllianceDesc",
       bg: "#11306E",
       subs: [
-        { href: "/alliance/list", label: "업체 리스트", ready: true },
-        { href: "/map", label: "전체 지도", ready: true },
+        { href: "/alliance/list", labelKey: "subListStores", ready: true },
+        { href: "/map", labelKey: "subAllMap", ready: true },
       ],
     },
     {
       key: "lost",
       icon: "📦",
-      title: "분실물",
-      desc: "분실물 게시판·신고",
+      titleKey: "catLost",
+      descKey: "catLostDesc",
       bg: "#213A8F",
       subs: [
-        { href: "/lost/board", label: "분실물 게시판", ready: true },
-        { href: "/lost/register", label: "분실물 신고하기", ready: true },
+        { href: "/lost/board", labelKey: "subLostBoard", ready: true },
+        { href: "/lost/register", labelKey: "subLostRegister", ready: true },
       ],
     },
     {
       key: "share",
       icon: "🎁",
-      title: "나눔 게시판",
-      desc: "교재·생활용품 무료 나눔",
+      titleKey: "catShare",
+      descKey: "catShareDesc",
       bg: "#10B981",
       subs: [
-        { href: "/share/board", label: "나눔 게시판", ready: true },
-        { href: "/share/register", label: "나눔 등록하기", ready: true },
+        { href: "/share/board", labelKey: "subShareBoard", ready: true },
+        { href: "/share/register", labelKey: "subShareRegister", ready: true },
       ],
     },
     {
       key: "shuttle",
       icon: "🚌",
-      title: "셔틀버스",
-      desc: "시간표·노선 지도·운행 안내",
+      titleKey: "catShuttle",
+      descKey: "catShuttleDesc",
       bg: "#FFD500",
       ready: false,
       subs: [
-        { href: "/shuttle/schedule", label: "운행 시간표", ready: false },
-        { href: "/shuttle/map", label: "노선 지도", ready: false },
+        { href: "/shuttle/schedule", labelKey: "subListStores", ready: false },
+        { href: "/shuttle/map", labelKey: "subAllMap", ready: false },
       ],
     },
     {
       key: "volunteer",
       icon: "🤝",
-      title: "서포터즈·봉사단",
-      desc: "지원자 모집·신청서",
+      titleKey: "catVolunteer",
+      descKey: "catVolunteerDesc",
       bg: "#E6007E",
       ready: false,
       subs: [
-        { href: "/volunteer/recruit", label: "모집 공고", ready: false },
-        { href: "/volunteer/apply", label: "지원서 작성", ready: false },
+        { href: "/volunteer/recruit", labelKey: "subListStores", ready: false },
+        { href: "/volunteer/apply", labelKey: "subShareRegister", ready: false },
       ],
     },
   ];
@@ -98,36 +87,16 @@ export default function Home() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/sju-logo.png" alt="SJU 서정대학교" className="h-12 w-auto rounded-md bg-white p-1" />
           <div>
-            <h1 className="text-white font-semibold text-base leading-tight">학생 종합 정보</h1>
+            <h1 className="text-white font-semibold text-base leading-tight">{t("siteName")}</h1>
             <p className="text-xs leading-tight" style={{ color: "#FFD500" }}>Seojeong University</p>
           </div>
         </div>
-        <div className="relative">
-          <button onClick={() => setShowLangMenu(!showLangMenu)} className="px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2" style={{ backgroundColor: "#213A8F", color: "white" }}>
-            <span>🌐</span>
-            <span className="hidden sm:inline">{LOCALES.find((l) => l.code === locale)?.label}</span>
-            <span className="text-xs">▼</span>
-          </button>
-          {showLangMenu && (
-            <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg overflow-hidden min-w-[160px] z-50">
-              {LOCALES.map((l) => (
-                <button key={l.code} onClick={() => changeLocale(l.code)} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-gray-100 ${l.code === locale ? "bg-blue-50 font-medium" : ""}`} style={l.code === locale ? { color: "#11306E" } : {}}>
-                  <span>{l.flag}</span>
-                  <span>{l.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <LangSwitcher locale={locale} onChange={setLocale} />
       </header>
 
       <section className="px-5 py-8 text-white" style={{ backgroundColor: "#213A8F" }}>
-        <h2 className="text-xl font-bold mb-1">
-          {locale === "ko" ? "어떤 정보가 필요하세요?" : "What are you looking for?"}
-        </h2>
-        <p className="text-sm" style={{ color: "#B5D4F4" }}>
-          {locale === "ko" ? "카테고리를 클릭해서 펼쳐보세요" : "Click a category to expand"}
-        </p>
+        <h2 className="text-xl font-bold mb-1">{t("mainHeroTitle")}</h2>
+        <p className="text-sm" style={{ color: "#B5D4F4" }}>{t("mainHeroDesc")}</p>
       </section>
 
       <section className="px-5 py-6 max-w-3xl mx-auto space-y-3">
@@ -144,12 +113,12 @@ export default function Home() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-bold leading-tight" style={{ color: "#11306E" }}>
-                    {c.title}
+                    {t(c.titleKey)}
                     {c.ready === false && (
-                      <span className="ml-2 text-[11px] font-medium text-gray-400 align-middle">(구현 준비중)</span>
+                      <span className="ml-2 text-[11px] font-medium text-gray-400 align-middle">({t("inDevelopment")})</span>
                     )}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-0.5">{c.desc}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t(c.descKey)}</p>
                 </div>
                 <span className="text-gray-400 text-lg">{isOpen ? "▲" : "▼"}</span>
               </button>
@@ -164,17 +133,14 @@ export default function Home() {
                         className="block px-3 py-3 rounded-lg hover:bg-white transition flex items-center justify-between"
                       >
                         <span className="text-sm font-medium" style={{ color: "#11306E" }}>
-                          {sub.label}
-                          {sub.note && (
-                            <span className="ml-2 text-[10px] font-normal text-gray-400">({sub.note})</span>
-                          )}
+                          {t(sub.labelKey)}
                         </span>
                         <span className="text-gray-400">→</span>
                       </Link>
                     ) : (
                       <div key={sub.href} className="px-3 py-3 flex items-center justify-between opacity-60">
-                        <span className="text-sm text-gray-500">{sub.label}</span>
-                        <span className="text-xs text-gray-400">🚧 준비중</span>
+                        <span className="text-sm text-gray-500">{t(sub.labelKey)}</span>
+                        <span className="text-xs text-gray-400">🚧 {t("inDevelopment")}</span>
                       </div>
                     )
                   ))}
@@ -186,7 +152,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-8 py-4 px-5 text-center text-xs text-white" style={{ backgroundColor: "#11306E" }}>
-        © 2025 서정대학교 · 학생 종합 정보 사이트
+        {t("footer")}
       </footer>
     </main>
   );

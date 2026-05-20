@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useLocale } from "@/lib/useLocale";
+import LangSwitcher from "@/components/LangSwitcher";
 
 type LostItem = {
   id: string;
@@ -16,18 +18,20 @@ type LostItem = {
   created_at: string;
 };
 
-const CATEGORIES = [
-  { key: "all", label: "전체" },
-  { key: "wallet", label: "지갑·카드" },
-  { key: "phone", label: "휴대폰·전자기기" },
-  { key: "bag", label: "가방·옷" },
-  { key: "umbrella", label: "우산" },
-  { key: "key", label: "키·열쇠" },
-  { key: "book", label: "도서·서류" },
-  { key: "etc", label: "기타" },
-];
-
 export default function LostBoard() {
+  const { locale, setLocale, t } = useLocale();
+
+  const CATEGORIES = [
+    { key: "all", label: t("all") },
+    { key: "wallet", label: t("lostCatWallet") },
+    { key: "phone", label: t("lostCatPhone") },
+    { key: "bag", label: t("lostCatBag") },
+    { key: "umbrella", label: t("lostCatUmbrella") },
+    { key: "key", label: t("lostCatKey") },
+    { key: "book", label: t("lostCatBook") },
+    { key: "etc", label: t("lostCatEtc") },
+  ];
+
   const [items, setItems] = useState<LostItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState<"all" | "lost" | "found">("all");
@@ -64,30 +68,33 @@ export default function LostBoard() {
       <header className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between gap-3" style={{ backgroundColor: "#11306E" }}>
         <div className="flex items-center gap-3">
           <Link href="/" className="text-white text-xl">←</Link>
-          <h1 className="text-white font-semibold">📦 분실물 게시판</h1>
+          <h1 className="text-white font-semibold">📦 {t("lostBoardTitle")}</h1>
         </div>
-        <Link href="/lost/register" className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: "#FFD500", color: "#11306E" }}>
-          + 글쓰기
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/lost/register" className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: "#FFD500", color: "#11306E" }}>
+            {t("lostWriteBtn")}
+          </Link>
+          <LangSwitcher locale={locale} onChange={setLocale} compact />
+        </div>
       </header>
 
       {/* 타입 탭 */}
       <div className="px-5 py-3 bg-white border-b border-gray-200 sticky top-[60px] z-30">
         <div className="max-w-3xl mx-auto flex gap-2 mb-2">
           {[
-            { key: "all", label: "전체", count: counts.all, color: "#11306E" },
-            { key: "lost", label: "🔍 잃어버렸어요", count: counts.lost, color: "#991B1B" },
-            { key: "found", label: "✋ 주웠어요", count: counts.found, color: "#065F46" },
-          ].map((t) => {
-            const active = typeFilter === t.key;
+            { key: "all", label: t("all"), count: counts.all, color: "#11306E" },
+            { key: "lost", label: t("lostTypeLost"), count: counts.lost, color: "#991B1B" },
+            { key: "found", label: t("lostTypeFound"), count: counts.found, color: "#065F46" },
+          ].map((tab) => {
+            const active = typeFilter === tab.key;
             return (
               <button
-                key={t.key}
-                onClick={() => setTypeFilter(t.key as any)}
+                key={tab.key}
+                onClick={() => setTypeFilter(tab.key as any)}
                 className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition ${active ? "text-white" : "bg-white text-gray-700 border border-gray-300"}`}
-                style={active ? { backgroundColor: t.color } : {}}
+                style={active ? { backgroundColor: tab.color } : {}}
               >
-                {t.label} <span className="opacity-70">{t.count}</span>
+                {tab.label} <span className="opacity-70">{tab.count}</span>
               </button>
             );
           })}
@@ -98,7 +105,7 @@ export default function LostBoard() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="제목·위치 검색"
+          placeholder={t("searchPostsPlaceholder")}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm mb-2"
         />
 
@@ -122,12 +129,12 @@ export default function LostBoard() {
 
       <section className="px-5 py-5 max-w-3xl mx-auto">
         {loading ? (
-          <p className="text-center text-gray-500 py-12">불러오는 중...</p>
+          <p className="text-center text-gray-500 py-12">{t("loading")}</p>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-500 mb-4">아직 게시글이 없습니다</p>
+            <p className="text-gray-500 mb-4">{t("noPosts")}</p>
             <Link href="/lost/register" className="inline-block px-5 py-2.5 rounded-lg text-sm font-bold text-white" style={{ backgroundColor: "#11306E" }}>
-              첫 글 작성하기
+              {t("lostFirstPost")}
             </Link>
           </div>
         ) : (
@@ -135,9 +142,9 @@ export default function LostBoard() {
             {filtered.map((item) => {
               const thumb = item.images && item.images.length > 0 ? item.images[0] : null;
               const typeBadge = item.type === "lost"
-                ? { label: "잃어버렸어요", color: "#991B1B", bg: "#FEE2E2" }
-                : { label: "주웠어요",     color: "#065F46", bg: "#D1FAE5" };
-              const categoryLabel = CATEGORIES.find((c) => c.key === item.category)?.label || "기타";
+                ? { label: t("lostTypeLost"), color: "#991B1B", bg: "#FEE2E2" }
+                : { label: t("lostTypeFound"),     color: "#065F46", bg: "#D1FAE5" };
+              const categoryLabel = CATEGORIES.find((c) => c.key === item.category)?.label || t("lostCatEtc");
 
               return (
                 <Link
