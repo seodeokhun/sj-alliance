@@ -171,7 +171,7 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
           {/* 작성자·날짜 + 번역 토글 */}
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <p className="text-xs text-gray-500">
-              👤 {item.nickname} · {new Date(item.created_at).toLocaleString("ko-KR")}
+              👤 {item.nickname} · {new Date(item.created_at).toLocaleString(locale === "ko" ? "ko-KR" : locale === "vi" ? "vi-VN" : locale === "uz" ? "uz-UZ" : "en-US")}
             </p>
             {isTranslated && (
               <button
@@ -182,6 +182,13 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
               </button>
             )}
           </div>
+
+          {/* 번역 없음 안내 (기존 글) */}
+          {locale !== orig && !item.translations?.[locale] && (
+            <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-2 mb-3">
+              <p className="text-[11px] text-yellow-800">⚠️ {t("noTranslationAvailable")}</p>
+            </div>
+          )}
 
           {/* 사진 갤러리 */}
           {item.images && item.images.length > 0 && (
@@ -204,7 +211,7 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
           <div className="space-y-1.5 text-sm text-gray-700 mb-4">
             {displayLocation && <p>📍 {displayLocation}</p>}
             {item.lost_at && (
-              <p>🕒 {item.type === "lost" ? t("fieldLostAt") : t("fieldFoundAt")}: {new Date(item.lost_at).toLocaleString("ko-KR")}</p>
+              <p>🕒 {item.type === "lost" ? t("fieldLostAt") : t("fieldFoundAt")}: {new Date(item.lost_at).toLocaleString(locale === "ko" ? "ko-KR" : locale === "vi" ? "vi-VN" : locale === "uz" ? "uz-UZ" : "en-US")}</p>
             )}
           </div>
 
@@ -251,7 +258,7 @@ export default function LostDetail({ params }: { params: Promise<{ id: string }>
                         {cTranslated && <span className="ml-1.5 text-[9px] text-gray-400 font-normal">🌐</span>}
                       </span>
                       <span className="text-[10px] text-gray-400">
-                        {new Date(c.created_at).toLocaleString("ko-KR")}
+                        {new Date(c.created_at).toLocaleString(locale === "ko" ? "ko-KR" : locale === "vi" ? "vi-VN" : locale === "uz" ? "uz-UZ" : "en-US")}
                       </span>
                     </div>
                     <p className="text-sm text-gray-700 whitespace-pre-wrap">{cContent}</p>

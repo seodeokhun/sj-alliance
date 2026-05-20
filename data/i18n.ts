@@ -85,6 +85,12 @@ export const TEXTS = {
     vi: "Dịch tự động",
     uz: "Avtomatik tarjima",
   },
+  noTranslationAvailable: {
+    ko: "이 글은 번역 데이터가 없습니다 (기능 도입 이전 작성)",
+    en: "No translation available for this post (written before this feature)",
+    vi: "Bài viết này không có bản dịch (viết trước khi có tính năng)",
+    uz: "Bu post uchun tarjima yoʻq (xususiyatdan oldin yozilgan)",
+  },
   cancel: {
     ko: "취소",
     en: "Cancel",

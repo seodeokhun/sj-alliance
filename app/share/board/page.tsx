@@ -193,7 +193,7 @@ export default function ShareBoard() {
                         <p className="text-xs text-gray-500 truncate">📍 {locationDisplay}</p>
                       )}
                       <p className="text-[11px] text-gray-400 mt-1">
-                        {item.nickname} · {new Date(item.created_at).toLocaleDateString("ko-KR")}
+                        {item.nickname} · {new Date(item.created_at).toLocaleDateString(locale === "ko" ? "ko-KR" : locale === "vi" ? "vi-VN" : locale === "uz" ? "uz-UZ" : "en-US")}
                       </p>
                     </div>
                   </div>
