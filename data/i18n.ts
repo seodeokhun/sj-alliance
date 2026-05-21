@@ -683,6 +683,158 @@ export const TEXTS = {
     vi: "Tìm cửa hàng hoặc món...",
     uz: "Doʻkon yoki menyu qidirish...",
   },
+
+  // ==================== 셔틀버스 ====================
+  shuttleTitle: {
+    ko: "스쿨버스",
+    en: "School Bus",
+    vi: "Xe buýt trường",
+    uz: "Maktab avtobusi",
+  },
+  shuttleSubtitle: {
+    ko: "서정대학교 통학 버스 안내 (무료)",
+    en: "Seojeong University commuter shuttle (free)",
+    vi: "Xe đưa đón ĐH Seojeong (miễn phí)",
+    uz: "Seojeong universiteti shuttle avtobusi (bepul)",
+  },
+  shuttleTermLabel: {
+    ko: "운행 기간",
+    en: "Service Period",
+    vi: "Thời gian vận hành",
+    uz: "Xizmat davri",
+  },
+  shuttleWeekday: {
+    ko: "평일 (월~금)",
+    en: "Weekday (Mon-Fri)",
+    vi: "Ngày thường (T2-T6)",
+    uz: "Ish kunlari (Du-Ju)",
+  },
+  shuttleWeekend: {
+    ko: "주말 (토)",
+    en: "Weekend (Sat)",
+    vi: "Cuối tuần (T7)",
+    uz: "Dam olish kuni (Sha)",
+  },
+  shuttleNextDeparture: {
+    ko: "다음 출발",
+    en: "Next departure",
+    vi: "Chuyến tiếp theo",
+    uz: "Keyingi yo'nalish",
+  },
+  shuttleMinutesLeft: {
+    ko: "분 남음",
+    en: "min left",
+    vi: "phút nữa",
+    uz: "daqiqa qoldi",
+  },
+  shuttleNoMoreToday: {
+    ko: "오늘 등교 운행 종료",
+    en: "Service ended for today",
+    vi: "Hôm nay đã hết chuyến",
+    uz: "Bugun xizmat tugadi",
+  },
+  shuttleStops: {
+    ko: "정류장",
+    en: "Stops",
+    vi: "Điểm dừng",
+    uz: "Bekatlar",
+  },
+  shuttleTime1: {
+    ko: "1차",
+    en: "1st",
+    vi: "Chuyến 1",
+    uz: "1-chi",
+  },
+  shuttleTime2: {
+    ko: "2차",
+    en: "2nd",
+    vi: "Chuyến 2",
+    uz: "2-chi",
+  },
+  shuttleReturnTimes: {
+    ko: "하교 출발 시각",
+    en: "Return departures",
+    vi: "Giờ về",
+    uz: "Qaytish vaqtlari",
+  },
+  shuttleBuses: {
+    ko: "대",
+    en: "buses",
+    vi: "xe",
+    uz: "avtobus",
+  },
+  shuttleFavorite: {
+    ko: "즐겨찾기",
+    en: "Favorite",
+    vi: "Yêu thích",
+    uz: "Sevimli",
+  },
+  shuttleFavoriteAdd: {
+    ko: "★ 즐겨찾기에 추가",
+    en: "★ Add to favorites",
+    vi: "★ Thêm yêu thích",
+    uz: "★ Sevimliga qo'shish",
+  },
+  shuttleFavoriteRemove: {
+    ko: "★ 즐겨찾기 해제",
+    en: "★ Remove favorite",
+    vi: "★ Bỏ yêu thích",
+    uz: "★ Sevimlidan olib tashlash",
+  },
+  shuttleMyFavorites: {
+    ko: "내 즐겨찾기",
+    en: "My Favorites",
+    vi: "Yêu thích của tôi",
+    uz: "Mening sevimlilarim",
+  },
+  shuttleAllRoutes: {
+    ko: "전체 노선",
+    en: "All Routes",
+    vi: "Tất cả tuyến",
+    uz: "Barcha yo'nalishlar",
+  },
+  shuttleGeneralNotices: {
+    ko: "이용 안내",
+    en: "How to Use",
+    vi: "Hướng dẫn",
+    uz: "Foydalanish qo'llanmasi",
+  },
+  shuttleRouteNotices: {
+    ko: "이 노선 안내사항",
+    en: "Route notices",
+    vi: "Lưu ý tuyến này",
+    uz: "Yo'nalish ma'lumotlari",
+  },
+  shuttleSchoolDest: {
+    ko: "학교 (도착)",
+    en: "School (arrival)",
+    vi: "Trường (đến)",
+    uz: "Maktab (yetib kelish)",
+  },
+  shuttleSourceLink: {
+    ko: "학교 공식 페이지에서 보기",
+    en: "View official school page",
+    vi: "Xem trang chính thức của trường",
+    uz: "Maktab rasmiy sahifasini ko'rish",
+  },
+  shuttleGpsComing: {
+    ko: "🛰️ 실시간 GPS 위치 추적 기능은 곧 추가됩니다",
+    en: "🛰️ Real-time GPS tracking coming soon",
+    vi: "🛰️ Theo dõi GPS thời gian thực sắp ra mắt",
+    uz: "🛰️ Real vaqt GPS kuzatuvi tez orada qo'shiladi",
+  },
+  shuttleNoneToday: {
+    ko: "오늘 운행하지 않습니다",
+    en: "No service today",
+    vi: "Hôm nay không vận hành",
+    uz: "Bugun xizmat yo'q",
+  },
+  shuttleBoardingNotice: {
+    ko: "기사님 연락처 등 개인정보는 표시하지 않습니다. 필요 시 학교 공식 페이지를 참고해 주세요.",
+    en: "Driver contact info is not shown. Please refer to the official school page if needed.",
+    vi: "Số điện thoại tài xế không hiển thị. Vui lòng xem trang chính thức nếu cần.",
+    uz: "Haydovchi aloqa ma'lumotlari ko'rsatilmaydi. Kerak bo'lsa rasmiy sahifaga murojaat qiling.",
+  },
 };
 
 export function t(key: keyof typeof TEXTS, locale: Locale): string {

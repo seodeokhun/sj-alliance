@@ -60,10 +60,8 @@ export default function Home() {
       titleKey: "catShuttle",
       descKey: "catShuttleDesc",
       bg: "#FFD500",
-      ready: false,
       subs: [
-        { href: "/shuttle/schedule", labelKey: "subListStores", ready: false },
-        { href: "/shuttle/map", labelKey: "subAllMap", ready: false },
+        { href: "/shuttle", labelKey: "shuttleTitle", ready: true },
       ],
     },
     {
