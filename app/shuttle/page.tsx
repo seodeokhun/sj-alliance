@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/useLocale";
 import LangSwitcher from "@/components/LangSwitcher";
 import {
@@ -10,31 +11,102 @@ import {
   getNextDeparture,
   type ShuttleRoute,
 } from "@/data/shuttle";
+import CityBus91Section from "./CityBus91Section";
 
 const FAVORITE_KEY = "sj-shuttle-favorites";
 
+type TabKey = "school" | "city";
+
 export default function ShuttlePage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-gray-500">Loading...</div>}>
+      <ShuttlePageInner />
+    </Suspense>
+  );
+}
+
+function ShuttlePageInner() {
   const { locale, setLocale, t, mounted } = useLocale();
+  const params = useSearchParams();
+  const initialTab = (params.get("tab") === "city" ? "city" : "school") as TabKey;
+  const [tab, setTab] = useState<TabKey>(initialTab);
+
+  if (!mounted) return null;
+
+  return (
+    <main className="min-h-screen bg-gray-50 pb-24">
+      {/* 헤더 */}
+      <header
+        className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between"
+        style={{ backgroundColor: "#11306E" }}
+      >
+        <h1 className="text-white font-semibold text-base flex items-center gap-2">
+          🚌 {t("catShuttle")}
+        </h1>
+        <LangSwitcher locale={locale} onChange={setLocale} compact />
+      </header>
+
+      {/* 탭 */}
+      <div className="bg-white border-b border-gray-200 sticky top-[56px] z-30">
+        <div className="max-w-3xl mx-auto px-5 flex">
+          <TabButton active={tab === "school"} onClick={() => setTab("school")}>
+            🚐 {t("shuttleTabSchool")}
+          </TabButton>
+          <TabButton active={tab === "city"} onClick={() => setTab("city")}>
+            🚌 {t("shuttleTabCity")}
+          </TabButton>
+        </div>
+      </div>
+
+      {tab === "school" ? <SchoolBusSection t={t} /> : <CityBus91Section t={t} />}
+    </main>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
+        active ? "" : "text-gray-500 border-transparent"
+      }`}
+      style={
+        active
+          ? { color: "#11306E", borderColor: "#11306E" }
+          : {}
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+/* ==================== 스쿨버스 섹션 (기존 로직 유지) ==================== */
+function SchoolBusSection({ t }: { t: (key: any) => string }) {
   const [now, setNow] = useState(new Date());
   const [favorites, setFavorites] = useState<string[]>([]);
   const [dayType, setDayType] = useState<"weekday" | "weekend">("weekday");
   const [showNotices, setShowNotices] = useState(false);
 
-  // 현재 시각 1분마다 갱신 (다음 버스 카운트다운용)
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, []);
 
-  // 첫 진입 시 현재 요일에 맞춰 평일/주말 자동 선택
   useEffect(() => {
-    const day = new Date().getDay(); // 0=일, 6=토
+    const day = new Date().getDay();
     if (day === 6) setDayType("weekend");
-    else if (day === 0) setDayType("weekday"); // 일요일은 운행 없음 → 평일 기본
     else setDayType("weekday");
   }, []);
 
-  // 즐겨찾기 로드
   useEffect(() => {
     try {
       const raw = localStorage.getItem(FAVORITE_KEY);
@@ -66,31 +138,16 @@ export default function ShuttlePage() {
     [routesForDay, favorites]
   );
 
-  // 일요일은 운행 없음
   const isSunday = new Date().getDay() === 0;
   const todayMatchesType =
     (dayType === "weekday" && [1, 2, 3, 4, 5].includes(new Date().getDay())) ||
     (dayType === "weekend" && new Date().getDay() === 6);
 
-  if (!mounted) return null;
-
   return (
-    <main className="min-h-screen bg-gray-50 pb-24">
-      {/* 헤더 */}
-      <header
-        className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between"
-        style={{ backgroundColor: "#11306E" }}
-      >
-        <h1 className="text-white font-semibold text-base flex items-center gap-2">
-          🚌 {t("shuttleTitle")}
-        </h1>
-        <LangSwitcher locale={locale} onChange={setLocale} compact />
-      </header>
-
-      {/* 히어로 */}
+    <>
       <section className="px-5 py-6 text-white" style={{ backgroundColor: "#213A8F" }}>
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-xl font-bold mb-1">{t("shuttleTitle")}</h2>
+          <h2 className="text-xl font-bold mb-1">{t("shuttleTabSchool")}</h2>
           <p className="text-xs mb-3" style={{ color: "#B5D4F4" }}>
             {t("shuttleSubtitle")}
           </p>
@@ -104,7 +161,6 @@ export default function ShuttlePage() {
       </section>
 
       <div className="max-w-3xl mx-auto px-5">
-        {/* GPS 안내 배너 */}
         <div
           className="mt-5 px-4 py-3 rounded-lg text-xs"
           style={{ backgroundColor: "#FFF8DD", color: "#7A5C00", border: "1px solid #FFE680" }}
@@ -112,16 +168,13 @@ export default function ShuttlePage() {
           {t("shuttleGpsComing")}
         </div>
 
-        {/* 평일/주말 토글 */}
         <div className="mt-5 grid grid-cols-2 gap-2 p-1 bg-white rounded-xl border border-gray-200">
           <button
             onClick={() => setDayType("weekday")}
             className={`py-3 rounded-lg text-sm font-semibold transition ${
               dayType === "weekday" ? "text-white" : "text-gray-600"
             }`}
-            style={{
-              backgroundColor: dayType === "weekday" ? "#11306E" : "transparent",
-            }}
+            style={{ backgroundColor: dayType === "weekday" ? "#11306E" : "transparent" }}
           >
             {t("shuttleWeekday")}
           </button>
@@ -130,22 +183,18 @@ export default function ShuttlePage() {
             className={`py-3 rounded-lg text-sm font-semibold transition ${
               dayType === "weekend" ? "text-white" : "text-gray-600"
             }`}
-            style={{
-              backgroundColor: dayType === "weekend" ? "#11306E" : "transparent",
-            }}
+            style={{ backgroundColor: dayType === "weekend" ? "#11306E" : "transparent" }}
           >
             {t("shuttleWeekend")}
           </button>
         </div>
 
-        {/* 일요일 안내 */}
         {isSunday && (
           <div className="mt-3 px-4 py-3 rounded-lg text-xs text-center bg-gray-100 text-gray-600">
             ⚠️ {t("shuttleNoneToday")}
           </div>
         )}
 
-        {/* 즐겨찾기 섹션 */}
         {favRoutes.length > 0 && (
           <section className="mt-6">
             <h3 className="text-sm font-bold mb-2 flex items-center gap-1" style={{ color: "#11306E" }}>
@@ -167,7 +216,6 @@ export default function ShuttlePage() {
           </section>
         )}
 
-        {/* 전체 노선 */}
         <section className="mt-6">
           <h3 className="text-sm font-bold mb-2" style={{ color: "#11306E" }}>
             {t("shuttleAllRoutes")} ({otherRoutes.length})
@@ -187,7 +235,6 @@ export default function ShuttlePage() {
           </div>
         </section>
 
-        {/* 이용 안내 (접기) */}
         <section className="mt-8">
           <button
             onClick={() => setShowNotices((v) => !v)}
@@ -201,9 +248,7 @@ export default function ShuttlePage() {
           {showNotices && (
             <div className="mt-2 bg-white border border-gray-200 rounded-xl px-4 py-3 space-y-2">
               {SHUTTLE_GENERAL_NOTICES.map((n, i) => (
-                <p key={i} className="text-xs text-gray-700 leading-relaxed">
-                  • {n}
-                </p>
+                <p key={i} className="text-xs text-gray-700 leading-relaxed">• {n}</p>
               ))}
               <p className="text-[11px] text-gray-500 leading-relaxed pt-2 border-t border-gray-100">
                 {t("shuttleBoardingNotice")}
@@ -212,7 +257,6 @@ export default function ShuttlePage() {
           )}
         </section>
 
-        {/* 학교 공식 페이지 링크 */}
         <div className="mt-6 text-center">
           <a
             href="https://seojeong.ac.kr/main/campus-life/school-bus.do"
@@ -225,7 +269,7 @@ export default function ShuttlePage() {
           </a>
         </div>
       </div>
-    </main>
+    </>
   );
 }
 
@@ -249,12 +293,9 @@ function RouteCard({
 
   return (
     <article className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      {/* 카드 헤더 */}
       <header className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: "#FFF8DD" }}>
         <div className="flex items-center gap-2">
-          <span className="font-bold text-base" style={{ color: "#11306E" }}>
-            {route.name}
-          </span>
+          <span className="font-bold text-base" style={{ color: "#11306E" }}>{route.name}</span>
           {route.buses > 1 && (
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-white border border-gray-200 text-gray-600">
               {route.buses}{t("shuttleBuses")}
@@ -271,19 +312,14 @@ function RouteCard({
         </button>
       </header>
 
-      {/* 다음 출발 카운트다운 */}
       {showCountdown && (
         <div className="px-4 py-3 border-b border-gray-100">
           {next ? (
             <div className="flex items-center justify-between">
               <div className="text-[11px] text-gray-500">{t("shuttleNextDeparture")}</div>
               <div className="text-right">
-                <div className="text-sm font-bold" style={{ color: "#11306E" }}>
-                  {next.time}
-                </div>
-                <div className="text-[11px] text-gray-600 truncate max-w-[200px]">
-                  {next.stopName}
-                </div>
+                <div className="text-sm font-bold" style={{ color: "#11306E" }}>{next.time}</div>
+                <div className="text-[11px] text-gray-600 truncate max-w-[200px]">{next.stopName}</div>
               </div>
               <div className="text-lg font-bold" style={{ color: "#E6007E" }}>
                 {next.minutesLeft}
@@ -298,7 +334,6 @@ function RouteCard({
         </div>
       )}
 
-      {/* 정류장 + 시간 테이블 */}
       <div className="px-4 py-3">
         <div className="text-[11px] font-semibold text-gray-500 mb-2 grid grid-cols-[1fr_50px_50px] gap-2 px-1">
           <span>{t("shuttleStops")}</span>
@@ -311,9 +346,7 @@ function RouteCard({
             return (
               <div
                 key={idx}
-                className={`grid grid-cols-[1fr_50px_50px] gap-2 items-center px-1 py-1.5 text-xs ${
-                  isSchool ? "rounded-md" : ""
-                }`}
+                className={`grid grid-cols-[1fr_50px_50px] gap-2 items-center px-1 py-1.5 text-xs ${isSchool ? "rounded-md" : ""}`}
                 style={isSchool ? { backgroundColor: "#F0F4FA" } : {}}
               >
                 <div className="flex flex-col">
@@ -321,23 +354,16 @@ function RouteCard({
                     {isSchool ? `🏫 ${t("shuttleSchoolDest")}` : stop.name}
                   </span>
                   {stop.note && (
-                    <span className="text-[10px] text-orange-600 mt-0.5">
-                      ⚠ {stop.note}
-                    </span>
+                    <span className="text-[10px] text-orange-600 mt-0.5">⚠ {stop.note}</span>
                   )}
                 </div>
-                <span className="text-center text-gray-700 font-mono">
-                  {stop.time1 ?? "—"}
-                </span>
-                <span className="text-center text-gray-700 font-mono">
-                  {stop.time2 ?? "—"}
-                </span>
+                <span className="text-center text-gray-700 font-mono">{stop.time1 ?? "—"}</span>
+                <span className="text-center text-gray-700 font-mono">{stop.time2 ?? "—"}</span>
               </div>
             );
           })}
         </div>
 
-        {/* 하교 시각 */}
         {route.returnTimes.length > 0 && (
           <div className="mt-3 pt-3 border-t border-gray-100">
             <div className="text-[11px] font-semibold text-gray-500 mb-1">
@@ -357,16 +383,34 @@ function RouteCard({
           </div>
         )}
 
-        {/* 노선별 안내사항 */}
         {route.notes && route.notes.length > 0 && (
           <div className="mt-3 pt-3 border-t border-gray-100">
             <div className="text-[11px] font-semibold text-gray-500 mb-1">
               💡 {t("shuttleRouteNotices")}
             </div>
             {route.notes.map((n, i) => (
-              <p key={i} className="text-[11px] text-gray-600 leading-relaxed">
-                • {n}
-              </p>
+              <p key={i} className="text-[11px] text-gray-600 leading-relaxed">• {n}</p>
+            ))}
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+                  {time}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {route.notes && route.notes.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="text-[11px] font-semibold text-gray-500 mb-1">
+              💡 {t("shuttleRouteNotices")}
+            </div>
+            {route.notes.map((n, i) => (
+              <p key={i} className="text-[11px] text-gray-600 leading-relaxed">• {n}</p>
             ))}
           </div>
         )}

@@ -61,7 +61,8 @@ export default function Home() {
       descKey: "catShuttleDesc",
       bg: "#FFD500",
       subs: [
-        { href: "/shuttle", labelKey: "shuttleTitle", ready: true },
+        { href: "/shuttle?tab=school", labelKey: "subCommuteSchool", ready: true },
+        { href: "/shuttle?tab=city", labelKey: "subCommuteCity", ready: true },
       ],
     },
     {
