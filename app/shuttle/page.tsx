@@ -397,24 +397,3 @@ function RouteCard({
     </article>
   );
 }
-                  {time}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {route.notes && route.notes.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <div className="text-[11px] font-semibold text-gray-500 mb-1">
-              💡 {t("shuttleRouteNotices")}
-            </div>
-            {route.notes.map((n, i) => (
-              <p key={i} className="text-[11px] text-gray-600 leading-relaxed">• {n}</p>
-            ))}
-          </div>
-        )}
-      </div>
-    </article>
-  );
-}
