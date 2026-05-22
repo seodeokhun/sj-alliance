@@ -1045,6 +1045,72 @@ export const TEXTS = {
     vi: "Chuyến sắp tới",
     uz: "Yaqinlashayotgan reyslar",
   },
+  cityBusToSchool: {
+    ko: "서정대학교 본관 방면",
+    en: "Toward Seojeong University",
+    vi: "Hướng ĐH Seojeong",
+    uz: "Seojeong universitetiga",
+  },
+  cityBusToOrigin: {
+    ko: "주공6단지 방면",
+    en: "Toward Jugong 6",
+    vi: "Hướng Jugong 6",
+    uz: "Jugong 6 tomon",
+  },
+  cityBusOriginLabel: {
+    ko: "시점",
+    en: "Origin",
+    vi: "Điểm đầu",
+    uz: "Boshlanish",
+  },
+  cityBusDestLabel: {
+    ko: "종점",
+    en: "Terminus",
+    vi: "Điểm cuối",
+    uz: "Oxiri",
+  },
+  cityBusTapToView: {
+    ko: "정류장을 누르면 도착 정보를 볼 수 있어요",
+    en: "Tap a stop to see arrival info",
+    vi: "Chạm vào điểm dừng để xem giờ đến",
+    uz: "Bekatga bosib yetib kelish vaqtini koʻring",
+  },
+  cityBusEstimated: {
+    ko: "추정",
+    en: "Estimated",
+    vi: "Ước tính",
+    uz: "Taxminiy",
+  },
+  cityBusEstimatedNote: {
+    ko: "정확한 시각은 실시간 API 연동 후 표시됩니다",
+    en: "Exact time will show after live API is connected",
+    vi: "Giờ chính xác sẽ hiện sau khi kết nối API",
+    uz: "Aniq vaqt API ulanganda koʻrsatiladi",
+  },
+  cityBusEnd: {
+    ko: "오늘 운행 종료",
+    en: "Service ended for today",
+    vi: "Hôm nay đã hết chuyến",
+    uz: "Bugun xizmat tugadi",
+  },
+  cityBusReferenceTime: {
+    ko: "기준",
+    en: "as of",
+    vi: "tính đến",
+    uz: "soat",
+  },
+  cityBusStopNumber: {
+    ko: "정거장",
+    en: "stops",
+    vi: "điểm dừng",
+    uz: "bekat",
+  },
+  cityBusMinutesShort: {
+    ko: "분",
+    en: "min",
+    vi: "phút",
+    uz: "daqiqa",
+  },
 };
 
 export function t(key: keyof typeof TEXTS, locale: Locale): string {

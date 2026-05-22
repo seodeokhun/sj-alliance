@@ -15,19 +15,25 @@ export type BusStop91 = {
   lng?: number;
   /** 주요 경유지인지 (목록에서 강조) */
   major?: boolean;
+  /**
+   * 시점(주공6단지)에서 이 정류장까지 평균 소요 시간(분) - 추정치
+   * 학교 페이지 명시: 덕정역 → 서정대학교 약 10분
+   * 그 외 구간은 정류장 간격 기준 추정 (실시간 API 연동 시 실측치로 대체)
+   */
+  minFromOrigin: number;
 };
 
 /** 91번 경유 정류장 (주공6단지 → 학교 방향) */
 export const BUS91_STOPS: BusStop91[] = [
-  { name: "주공6단지",                 major: true },
-  { name: "주공8단지" },
-  { name: "회전초교 / 덕정주공 4단지" },
-  { name: "덕정주공2단지" },
-  { name: "융보아파트" },
-  { name: "덕정역",                    major: true },
-  { name: "덕정사거리" },
-  { name: "국군양주병원" },
-  { name: "서정대학교 본관",            major: true },
+  { name: "주공6단지",                 major: true,  minFromOrigin: 0  },
+  { name: "주공8단지",                                minFromOrigin: 2  },
+  { name: "회전초교 / 덕정주공 4단지",                minFromOrigin: 4  },
+  { name: "덕정주공2단지",                            minFromOrigin: 7  },
+  { name: "융보아파트",                               minFromOrigin: 9  },
+  { name: "덕정역",                    major: true,  minFromOrigin: 12 },
+  { name: "덕정사거리",                               minFromOrigin: 14 },
+  { name: "국군양주병원",                             minFromOrigin: 18 },
+  { name: "서정대학교 본관",            major: true,  minFromOrigin: 22 },
 ];
 
 /** 운행 일반 정보 */
@@ -180,9 +186,8 @@ export function getUpcomingTrips(
     const time = direction === "school" ? trip.school : trip.deokjeong;
     const [h, m] = time.split(":").map(Number);
     const tripMin = h * 60 + m;
-    // 자정 넘어가는 102회 처리
     if (trip.trip === 102 && direction === "school") {
-      return currentMin <= 24 * 60; // 자정 직전까지는 표시
+      return currentMin <= 24 * 60;
     }
     return tripMin >= currentMin;
   });
@@ -190,8 +195,136 @@ export function getUpcomingTrips(
   return upcoming.slice(0, count);
 }
 
-/** 어떤 시각 문자열을 분 단위로 변환 (HH:MM) */
+/** 시각 문자열(HH:MM)을 분 단위로 변환 */
 export function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
+}
+
+/* ==================== 정류장별 도착 시각 계산 ==================== */
+
+export type StopArrival = {
+  /** 운행 회차 (1~102) */
+  trip: number;
+  /** 이 정류장 도착 시각 (HH:MM) */
+  arrivalTime: string;
+  /** 현재 시각 기준 남은 분 */
+  minutesLeft: number;
+  /** true = 추정치 (학교·덕정역 외 중간 정류장) */
+  isEstimated: boolean;
+};
+
+const SCHOOL_INDEX = BUS91_STOPS.length - 1; // 8
+const DEOKJEONG_INDEX = BUS91_STOPS.findIndex((s) => s.name === "덕정역"); // 5
+const SCHOOL_OFFSET = BUS91_STOPS[SCHOOL_INDEX].minFromOrigin; // 22
+
+/**
+ * 학교 방면 (시점 → 학교) 도착 시각을 정류장별로 계산
+ *
+ * 정확한 시각:
+ *   - 종점 (서정대학교 본관) → 시간표의 school 시각
+ *   - 덕정역 → 시간표의 deokjeong 시각
+ * 추정치:
+ *   - 나머지 정류장 → 학교 도착 - (22 - minFromOrigin)
+ */
+export function getStopArrivalsToSchool(
+  stopIndex: number,
+  count: number = 3,
+  now: Date = new Date()
+): StopArrival[] {
+  const stop = BUS91_STOPS[stopIndex];
+  if (!stop) return [];
+
+  const currentMin = now.getHours() * 60 + now.getMinutes();
+  const results: StopArrival[] = [];
+  const isEstimated = stopIndex !== SCHOOL_INDEX && stopIndex !== DEOKJEONG_INDEX;
+
+  for (const trip of BUS91_SCHEDULE) {
+    let arrivalMin: number;
+
+    if (stopIndex === SCHOOL_INDEX) {
+      arrivalMin = timeToMinutes(trip.school);
+    } else if (stopIndex === DEOKJEONG_INDEX) {
+      arrivalMin = timeToMinutes(trip.deokjeong);
+    } else {
+      // 학교 시각 - (학교까지 남은 시간)
+      arrivalMin = timeToMinutes(trip.school) - (SCHOOL_OFFSET - stop.minFromOrigin);
+    }
+
+    // 자정 처리 (102회 학교 도착 00:02 → arrivalMin 2)
+    if (arrivalMin < 0) arrivalMin += 24 * 60;
+
+    const diff = arrivalMin - currentMin;
+    if (diff < 0) continue;
+
+    const hh = Math.floor(arrivalMin / 60) % 24;
+    const mm = arrivalMin % 60;
+    const arrivalTime = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+
+    results.push({
+      trip: trip.trip,
+      arrivalTime,
+      minutesLeft: diff,
+      isEstimated,
+    });
+
+    if (results.length >= count) break;
+  }
+
+  return results;
+}
+
+/**
+ * 학교 출발 방면 (학교 → 시점) 도착 시각을 정류장별로 계산
+ *
+ * 정확한 시각:
+ *   - 시점 (서정대학교 본관 출발) → 시간표의 school 시각
+ *   - 덕정역 → 시간표의 deokjeongReturn 시각
+ * 추정치:
+ *   - 나머지 정류장 → 학교 출발 시각 + (22 - minFromOrigin)
+ */
+export function getStopArrivalsFromSchool(
+  stopIndex: number,
+  count: number = 3,
+  now: Date = new Date()
+): StopArrival[] {
+  const stop = BUS91_STOPS[stopIndex];
+  if (!stop) return [];
+
+  const currentMin = now.getHours() * 60 + now.getMinutes();
+  const results: StopArrival[] = [];
+  const isEstimated = stopIndex !== SCHOOL_INDEX && stopIndex !== DEOKJEONG_INDEX;
+
+  for (const trip of BUS91_SCHEDULE) {
+    let arrivalMin: number;
+
+    if (stopIndex === SCHOOL_INDEX) {
+      arrivalMin = timeToMinutes(trip.school); // 학교 출발 시각 = school
+    } else if (stopIndex === DEOKJEONG_INDEX) {
+      arrivalMin = timeToMinutes(trip.deokjeongReturn);
+    } else {
+      // 학교 출발 + (22 - minFromOrigin)분 후 = 이 정류장 도착
+      arrivalMin = timeToMinutes(trip.school) + (SCHOOL_OFFSET - stop.minFromOrigin);
+    }
+
+    if (arrivalMin >= 24 * 60) arrivalMin -= 24 * 60;
+
+    const diff = arrivalMin - currentMin;
+    if (diff < 0) continue;
+
+    const hh = Math.floor(arrivalMin / 60) % 24;
+    const mm = arrivalMin % 60;
+    const arrivalTime = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+
+    results.push({
+      trip: trip.trip,
+      arrivalTime,
+      minutesLeft: diff,
+      isEstimated,
+    });
+
+    if (results.length >= count) break;
+  }
+
+  return results;
 }
