@@ -79,7 +79,7 @@ export default function ApplyPage() {
     return (
       <main className="min-h-screen bg-gray-50">
         <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
-          <Link href="/alliance" className="text-white text-xl">←</Link>
+          <Link href="/partner" className="text-white text-xl">←</Link>
           <h1 className="text-white font-semibold">신청 완료</h1>
         </header>
 
@@ -96,7 +96,7 @@ export default function ApplyPage() {
               ⚠️ 비밀번호를 잊으면 신청 조회·수정이 불가합니다. 안전한 곳에 보관해주세요.
             </p>
 
-            <Link href="/alliance" className="inline-block px-6 py-3 rounded-lg text-white font-medium" style={{ backgroundColor: "#11306E" }}>
+            <Link href="/partner" className="inline-block px-6 py-3 rounded-lg text-white font-medium" style={{ backgroundColor: "#11306E" }}>
               메인으로 돌아가기
             </Link>
           </div>
@@ -108,7 +108,7 @@ export default function ApplyPage() {
   return (
     <main className="min-h-screen bg-gray-50">
       <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
-        <Link href="/alliance" className="text-white text-xl">←</Link>
+        <Link href="/partner" className="text-white text-xl">←</Link>
         <h1 className="text-white font-semibold">📝 협약 업체 신청</h1>
       </header>
 

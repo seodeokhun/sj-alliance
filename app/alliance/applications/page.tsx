@@ -45,7 +45,7 @@ export default function ApplicationsList() {
   return (
     <main className="min-h-screen bg-gray-50">
       <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
-        <Link href="/alliance" className="text-white text-xl">←</Link>
+        <Link href="/partner" className="text-white text-xl">←</Link>
         <h1 className="text-white font-semibold">📄 신청 내역</h1>
       </header>
 
