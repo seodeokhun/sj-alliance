@@ -265,23 +265,6 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
             const isLast = displayIdx === stops.length - 1;
             const isMajor = stop.major;
 
-            // 이 정류장에 운행 중인 버스가 있는지 (stationSeq 기준)
-            // 학교 방면: stationSeq = stopIdx + 1 (1-based)
-            // 학교 출발: stationSeq = (총 65개) - stopIdx  로 계산
-            // BUS91_STOPS는 학교 방면 순서 (33개). 학교방면일 때 stationSeq = stopIdx+1
-            // 학교 출발 방면일 때는 stationSeq = 65 - stopIdx 정도 (역방향)
-            const expectedSeq = direction === "to-school"
-              ? stopIdx + 1
-              : 65 - stopIdx; // 대략적 매핑 (정확한 매핑은 stationId로)
-            const busesHere = busLocations.filter((b) => {
-              if (b.stationSeq === null) return false;
-              // stationId로 정확히 매칭
-              const expectedId = direction === "to-school"
-                ? stop.stationIdToSchool
-                : stop.stationIdFromSchool;
-              return expectedId && b.stationId === expectedId;
-            });
-
             return (
               <StopRow
                 key={stopIdx}
@@ -300,7 +283,6 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
                 liveLoading={isOpen ? liveLoading : false}
                 refreshDisabled={refreshDisabled}
                 onRefresh={handleRefresh}
-                busesHere={busesHere}
                 t={t}
               />
             );
@@ -380,7 +362,6 @@ function StopRow({
   liveLoading,
   refreshDisabled,
   onRefresh,
-  busesHere,
   t,
 }: {
   stop: { name: string; major?: boolean; minFromOrigin: number; stationIdToSchool: number; stationIdFromSchool?: number };
@@ -398,7 +379,6 @@ function StopRow({
   liveLoading: boolean;
   refreshDisabled: boolean;
   onRefresh: () => void;
-  busesHere: BusLocation[];
   t: (key: any) => string;
 }) {
   const arrivals = useMemo(
@@ -422,60 +402,24 @@ function StopRow({
         onClick={onClick}
         className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition text-left"
       >
-        {/* 좌측 타임라인 (굵은 연결선 + 화살표) */}
-        <div className="relative flex flex-col items-center w-7 flex-shrink-0 self-stretch">
-          {/* 위쪽 세로선 */}
+        {/* 좌측 타임라인 */}
+        <div className="relative flex flex-col items-center w-6 flex-shrink-0">
           {!isFirst && (
-            <div
-              className="absolute top-0 w-[3px] left-1/2 -translate-x-1/2"
-              style={{ backgroundColor: "#3D9651", height: "50%" }}
-            />
+            <div className="absolute top-0 w-0.5 h-1/2" style={{ backgroundColor: "#3D9651", opacity: 0.4 }} />
           )}
-          {/* 아래쪽 세로선 */}
           {!isLast && (
-            <div
-              className="absolute bottom-0 w-[3px] left-1/2 -translate-x-1/2"
-              style={{ backgroundColor: "#3D9651", height: "50%" }}
-            />
+            <div className="absolute bottom-0 w-0.5 h-1/2" style={{ backgroundColor: "#3D9651", opacity: 0.4 }} />
           )}
-          {/* 방향 화살표 (위에서 아래로 진행 표시, 정류장 동그라미 위쪽) */}
-          {!isFirst && (
-            <div
-              className="absolute text-[10px] leading-none"
-              style={{ top: "12%", color: "#3D9651" }}
-            >
-              ▼
-            </div>
-          )}
-          {/* 정류장 동그라미 */}
-          <div className="relative z-10 my-auto">
-            <div
-              className="rounded-full border-2"
-              style={{
-                width: isMajor ? "16px" : "12px",
-                height: isMajor ? "16px" : "12px",
-                backgroundColor: isMajor ? "#3D9651" : "white",
-                borderColor: "#3D9651",
-              }}
-            />
-          </div>
-        </div>
-
-        {/* 운행 중인 버스 표시 (이 정류장에 있을 때) */}
-        {busesHere.length > 0 && (
           <div
-            className="flex flex-col items-center gap-0.5 flex-shrink-0 px-1 py-1 rounded-md"
-            style={{ backgroundColor: "#FEF3C7", border: "1px solid #FBBF24" }}
-            title={`이 정류장 ${busesHere.length}대`}
-          >
-            <span className="text-base leading-none">🚌</span>
-            {busesHere.length > 1 && (
-              <span className="text-[9px] font-bold leading-none" style={{ color: "#B45309" }}>
-                ×{busesHere.length}
-              </span>
-            )}
-          </div>
-        )}
+            className="relative z-10 rounded-full border-2"
+            style={{
+              width: isMajor ? "14px" : "10px",
+              height: isMajor ? "14px" : "10px",
+              backgroundColor: isMajor ? "#3D9651" : "white",
+              borderColor: "#3D9651",
+            }}
+          />
+        </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -648,7 +592,7 @@ function LiveCard({
     ? Math.round(liveData.second.remainingSec / 60)
     : null;
 
-  // 의미 있는 데이터 확인 (시점·종점은 PASS만 나올 수 있음)
+  // 의미 있는 데이터가 있는지 확인 (시점·종점은 PASS만 나올 수 있음)
   const hasValidNext = minutes1 !== null;
   const hasValidSecond = minutes2 !== null;
   const flag1 = liveData.next?.flag;
@@ -715,7 +659,7 @@ function LiveCard({
         </div>
       )}
 
-      {/* 다다음 버스 */}
+      {/* 다다음 버스 (의미 있는 데이터일 때만) */}
       {hasValidSecond && liveData.second && (
         <div
           className="p-2.5 rounded-lg"
@@ -724,6 +668,27 @@ function LiveCard({
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-gray-600">다다음 버스</span>
             <span className="text-base font-bold text-gray-600">
+              {minutes2}
+              <span className="text-[10px] text-gray-500 font-normal ml-1">분 후</span>
+            </span>
+          </div>
+          <div className="text-[10px] text-gray-500 mt-0.5 flex flex-wrap gap-x-3">
+            {liveData.second.remainingStops !== null && (
+              <span>{liveData.second.remainingStops}정거장 전</span>
+            )}
+            {liveData.second.seats !== null && liveData.second.seats >= 0 && (
+              <span>좌석 {liveData.second.seats}</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="text-[10px] text-gray-400 text-right px-1">
+        갱신: {new Date(liveData.updatedAt).toLocaleTimeString("ko-KR")} · 1분 자동
+      </div>
+    </div>
+  );
+}
               {minutes2}
               <span className="text-[10px] text-gray-500 font-normal ml-1">분 후</span>
             </span>
