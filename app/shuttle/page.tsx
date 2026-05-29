@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useLocale } from "@/lib/useLocale";
 import LangSwitcher from "@/components/LangSwitcher";
 import {
@@ -37,10 +38,18 @@ function ShuttlePageInner() {
     <main className="min-h-screen bg-gray-50 pb-24">
       {/* 헤더 */}
       <header
-        className="px-5 py-4 sticky top-0 z-40 flex items-center justify-between"
+        className="px-3 py-3 sticky top-0 z-40 flex items-center justify-between gap-2"
         style={{ backgroundColor: "#11306E" }}
       >
-        <h1 className="text-white font-semibold text-base flex items-center gap-2">
+        <Link
+          href="/"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-white/10 transition text-white text-sm"
+          aria-label="홈으로"
+        >
+          <span className="text-base">←</span>
+          <span className="text-xs">홈</span>
+        </Link>
+        <h1 className="text-white font-semibold text-base flex items-center gap-2 flex-1 justify-center">
           🚌 {t("catShuttle")}
         </h1>
         <LangSwitcher locale={locale} onChange={setLocale} compact />

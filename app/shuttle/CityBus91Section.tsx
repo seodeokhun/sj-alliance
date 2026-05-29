@@ -181,6 +181,15 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
     setTimeout(() => setRefreshDisabled(false), 3000);
   }
 
+  /* ---------- 전체 새로고침 (열린 정류장 도착 + 모든 버스 위치) ---------- */
+  function handleRefreshAll() {
+    if (refreshDisabled) return;
+    setRefreshDisabled(true);
+    if (openStationId !== null) fetchLive(openStationId);
+    fetchBusLocations();
+    setTimeout(() => setRefreshDisabled(false), 3000);
+  }
+
   /* ---------- 정류장 순서 (방향에 따라 역순) ---------- */
   const stops = useMemo(
     () => (direction === "to-school" ? BUS91_STOPS : [...BUS91_STOPS].reverse()),
@@ -248,9 +257,22 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
           </button>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-gray-500 mb-2 px-1">
-          <span>⏱ {t("cityBusReferenceTime")} {refTimeStr}</span>
-          <span>{t("cityBusTapToView")}</span>
+        {/* 기준 시각 + 전체 새로고침 */}
+        <div className="flex items-center justify-between mb-2 px-1">
+          <span className="text-[11px] text-gray-500">⏱ {t("cityBusReferenceTime")} {refTimeStr}</span>
+          <button
+            onClick={handleRefreshAll}
+            disabled={refreshDisabled}
+            className="text-[11px] px-3 py-1 rounded-md text-white transition disabled:opacity-50 flex items-center gap-1 font-semibold"
+            style={{ backgroundColor: "#3D9651" }}
+            aria-label="전체 새로고침"
+          >
+            <span className={refreshDisabled ? "inline-block animate-spin" : ""}>🔄</span>
+            전체 새로고침
+          </button>
+        </div>
+        <div className="text-[11px] text-gray-500 mb-2 px-1">
+          {t("cityBusTapToView")}
         </div>
 
         {/* 정류장 타임라인 */}
