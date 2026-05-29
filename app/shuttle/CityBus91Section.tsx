@@ -438,6 +438,15 @@ function StopRow({
   // 역방향 정류장 ID 없으면 안내
   const noStationForDirection = direction === "from-school" && !stop.stationIdFromSchool;
 
+  // 실시간 도착 정보가 의미 있는지 (다음 버스 분 단위 데이터 있음)
+  const hasLiveArrival = !!(
+    liveData &&
+    liveData.ok &&
+    liveData.next &&
+    liveData.next.remainingSec !== null &&
+    liveData.next.remainingSec !== undefined
+  );
+
   return (
     <div className={`relative ${isLast ? "" : "border-b border-gray-100"}`}>
       <button
@@ -572,36 +581,42 @@ function StopRow({
             t={t}
           />
 
-          {/* 시간표 기반 다음 N개 */}
-          <div className="mt-3">
-            <div className="text-[11px] font-semibold text-gray-500 mb-1.5 px-1">
-              📋 {t("busScheduleUpcoming")} ({t("cityBusEstimated")})
-            </div>
-            <div className="space-y-1.5">
-              {arrivals.length === 0 ? (
-                <div className="text-xs text-gray-500 py-2 px-1">⏰ {t("cityBusEnd")}</div>
-              ) : (
-                arrivals.map((a, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between py-1.5 px-2 rounded"
-                    style={i === 0 ? { backgroundColor: "white", border: "1px solid #D1D5DB" } : {}}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-gray-400 font-mono">#{a.trip}</span>
-                      <span className="text-xs font-mono font-semibold" style={{ color: "#11306E" }}>
-                        {a.arrivalTime}
-                      </span>
+          {/*
+            시간표 기반 다음 N개 (추정)
+            실시간 도착 정보가 있을 때는 중복이라 숨김.
+            실시간이 없을 때 (시점·종점 PASS, 운행 종료, API 에러)에만 폴백으로 표시.
+          */}
+          {!hasLiveArrival && (
+            <div className="mt-3">
+              <div className="text-[11px] font-semibold text-gray-500 mb-1.5 px-1">
+                📋 {t("busScheduleUpcoming")} ({t("cityBusEstimated")})
+              </div>
+              <div className="space-y-1.5">
+                {arrivals.length === 0 ? (
+                  <div className="text-xs text-gray-500 py-2 px-1">⏰ {t("cityBusEnd")}</div>
+                ) : (
+                  arrivals.map((a, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between py-1.5 px-2 rounded"
+                      style={i === 0 ? { backgroundColor: "white", border: "1px solid #D1D5DB" } : {}}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-gray-400 font-mono">#{a.trip}</span>
+                        <span className="text-xs font-mono font-semibold" style={{ color: "#11306E" }}>
+                          {a.arrivalTime}
+                        </span>
+                      </div>
+                      <div className="text-xs">
+                        <b style={{ color: i === 0 ? "#E6007E" : "#6B7280" }}>{a.minutesLeft}</b>
+                        <span className="text-gray-500 ml-0.5">{t("cityBusMinutesShort")}</span>
+                      </div>
                     </div>
-                    <div className="text-xs">
-                      <b style={{ color: i === 0 ? "#E6007E" : "#6B7280" }}>{a.minutesLeft}</b>
-                      <span className="text-gray-500 ml-0.5">{t("cityBusMinutesShort")}</span>
-                    </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
