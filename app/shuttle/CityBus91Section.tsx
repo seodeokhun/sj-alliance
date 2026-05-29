@@ -14,22 +14,24 @@ type Direction = "to-school" | "from-school";
 
 type ArrivalData = {
   remainingSec: number | null;
-  locationNo: string | null;
+  remainingStops: number | null;
   seats: number | null;
   plateNo: string | null;
+  flag: string | null;
 };
 
 type ApiResponse =
   | {
       ok: true;
       updatedAt: string;
-      direction: "school" | "deokjeong";
+      stationId: string;
+      routeId: string;
       next: ArrivalData | null;
       second: ArrivalData | null;
     }
   | {
       ok: false;
-      error: "API_KEY_MISSING" | "CONFIG_MISSING" | "FETCH_ERROR" | "PARSE_ERROR";
+      error: "API_KEY_MISSING" | "CONFIG_MISSING" | "FETCH_ERROR" | "PARSE_ERROR" | "API_ERROR";
       message: string;
       updatedAt: string;
     };
@@ -39,12 +41,12 @@ const FAVORITE_KEY = "sj-bus91-favorite-stops";
 
 export default function CityBus91Section({ t }: { t: (key: any) => string }) {
   const [direction, setDirection] = useState<Direction>("to-school");
-  const [openStopIndex, setOpenStopIndex] = useState<number | null>(BUS91_STOPS.length - 1); // 기본 펼침 = 종점(학교)
+  const [openStopIndex, setOpenStopIndex] = useState<number | null>(BUS91_STOPS.length - 1); // 종점(학교) 기본 펼침
   const [now, setNow] = useState(new Date());
   const [showAllSchedule, setShowAllSchedule] = useState(false);
   const [favoriteStops, setFavoriteStops] = useState<number[]>([]);
 
-  // 실시간 도착 정보 (현재 학교 정류장만)
+  // 실시간 도착 정보 (현재 펼친 정류장)
   const [liveData, setLiveData] = useState<ApiResponse | null>(null);
   const [liveLoading, setLiveLoading] = useState(false);
   const [refreshDisabled, setRefreshDisabled] = useState(false);
@@ -74,14 +76,23 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
     return () => clearInterval(id);
   }, []);
 
-  /* ---------- 실시간 도착 (학교 방향에서 학교 정류장 열렸을 때만) ---------- */
-  const shouldFetchLive =
-    openStopIndex === BUS91_STOPS.length - 1 && direction === "to-school";
+  /* ---------- 현재 펼친 정류장의 stationId (방향별) ---------- */
+  const openStationId = useMemo(() => {
+    if (openStopIndex === null) return null;
+    const stop = BUS91_STOPS[openStopIndex];
+    if (!stop) return null;
+    if (direction === "to-school") return stop.stationIdToSchool ?? null;
+    return stop.stationIdFromSchool ?? null;
+  }, [openStopIndex, direction]);
 
-  const fetchLive = useCallback(async () => {
+  /* ---------- 실시간 도착정보 fetch ---------- */
+  const fetchLive = useCallback(async (stationId: number) => {
     setLiveLoading(true);
     try {
-      const res = await fetch("/api/bus-arrival?direction=school", { cache: "no-store" });
+      const res = await fetch(
+        `/api/bus-arrival?stationId=${stationId}&routeId=${BUS91_INFO.routeId}`,
+        { cache: "no-store" }
+      );
       const json = (await res.json()) as ApiResponse;
       setLiveData(json);
       lastFetchRef.current = Date.now();
@@ -97,22 +108,30 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
     }
   }, []);
 
+  /* ---------- 펼친 정류장 바뀔 때마다 실시간 호출 ---------- */
   useEffect(() => {
-    if (shouldFetchLive) fetchLive();
-  }, [shouldFetchLive, fetchLive]);
+    if (openStationId !== null) {
+      setLiveData(null);
+      fetchLive(openStationId);
+    } else {
+      setLiveData(null);
+    }
+  }, [openStationId, fetchLive]);
 
+  /* ---------- 1분마다 자동 갱신 (탭 보일 때만) ---------- */
   useEffect(() => {
-    if (!shouldFetchLive) return;
+    if (openStationId === null) return;
     const id = setInterval(() => {
-      if (document.visibilityState === "visible") fetchLive();
+      if (document.visibilityState === "visible") fetchLive(openStationId);
     }, AUTO_REFRESH_MS);
     return () => clearInterval(id);
-  }, [shouldFetchLive, fetchLive]);
+  }, [openStationId, fetchLive]);
 
+  /* ---------- 수동 새로고침 (3초 디바운스) ---------- */
   function handleRefresh() {
-    if (refreshDisabled || liveLoading) return;
+    if (refreshDisabled || liveLoading || openStationId === null) return;
     setRefreshDisabled(true);
-    fetchLive();
+    fetchLive(openStationId);
     setTimeout(() => setRefreshDisabled(false), 3000);
   }
 
@@ -122,15 +141,14 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
     [direction]
   );
 
-  /* ---------- 헤더의 "기준 시각" ---------- */
   const refTimeStr = now.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
 
   return (
     <>
-      {/* 노선 정보 헤더 (네이버 스타일) */}
+      {/* 노선 정보 헤더 */}
       <section
         className="px-5 py-5 text-white relative"
-        style={{ backgroundColor: "#3D9651" /* 양주 시내버스 녹색 */ }}
+        style={{ backgroundColor: "#3D9651" }}
       >
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <div
@@ -174,22 +192,17 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
           </button>
         </div>
 
-        {/* 기준 시각 + 새로고침 */}
         <div className="flex items-center justify-between text-[11px] text-gray-500 mb-2 px-1">
-          <span>
-            ⏱ {t("cityBusReferenceTime")} {refTimeStr}
-          </span>
+          <span>⏱ {t("cityBusReferenceTime")} {refTimeStr}</span>
           <span>{t("cityBusTapToView")}</span>
         </div>
 
         {/* 정류장 타임라인 */}
         <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           {stops.map((stop, displayIdx) => {
-            // 원본 인덱스 (BUS91_STOPS 기준)
             const stopIdx = direction === "to-school"
               ? displayIdx
               : BUS91_STOPS.length - 1 - displayIdx;
-
             const isOpen = openStopIndex === stopIdx;
             const isFav = favoriteStops.includes(stopIdx);
             const isFirst = displayIdx === 0;
@@ -210,8 +223,8 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
                 now={now}
                 onClick={() => setOpenStopIndex(isOpen ? null : stopIdx)}
                 onToggleFav={() => toggleFavorite(stopIdx)}
-                liveData={shouldFetchLive && stopIdx === BUS91_STOPS.length - 1 ? liveData : null}
-                liveLoading={liveLoading}
+                liveData={isOpen ? liveData : null}
+                liveLoading={isOpen ? liveLoading : false}
                 refreshDisabled={refreshDisabled}
                 onRefresh={handleRefresh}
                 t={t}
@@ -220,7 +233,7 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
           })}
         </section>
 
-        {/* 전체 시간표 (펼치기) */}
+        {/* 전체 시간표 */}
         <section className="mt-5 bg-white border border-gray-200 rounded-2xl overflow-hidden">
           <button
             onClick={() => setShowAllSchedule((v) => !v)}
@@ -229,9 +242,7 @@ export default function CityBus91Section({ t }: { t: (key: any) => string }) {
             <span className="text-sm font-semibold" style={{ color: "#11306E" }}>
               ⏱ {t("busScheduleTitle")} ({BUS91_INFO.dailyTrips}{t("cityBusTrips")})
             </span>
-            <span className="text-gray-400 text-xs">
-              {showAllSchedule ? "▲" : "▼"}
-            </span>
+            <span className="text-gray-400 text-xs">{showAllSchedule ? "▲" : "▼"}</span>
           </button>
 
           {showAllSchedule && (
@@ -297,7 +308,7 @@ function StopRow({
   onRefresh,
   t,
 }: {
-  stop: { name: string; major?: boolean; minFromOrigin: number };
+  stop: { name: string; major?: boolean; minFromOrigin: number; stationIdToSchool: number; stationIdFromSchool?: number };
   stopIdx: number;
   isOpen: boolean;
   isFav: boolean;
@@ -314,7 +325,6 @@ function StopRow({
   onRefresh: () => void;
   t: (key: any) => string;
 }) {
-  // 정류장 도착 정보 계산 (시간표 기반)
   const arrivals = useMemo(
     () =>
       direction === "to-school"
@@ -327,30 +337,23 @@ function StopRow({
   const isOriginStop = direction === "to-school" ? isFirst : isLast;
   const isDestStop = direction === "to-school" ? isLast : isFirst;
 
+  // 역방향 정류장 ID 없으면 안내
+  const noStationForDirection = direction === "from-school" && !stop.stationIdFromSchool;
+
   return (
     <div className={`relative ${isLast ? "" : "border-b border-gray-100"}`}>
-      {/* 클릭 가능한 행 */}
       <button
         onClick={onClick}
         className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition text-left"
       >
-        {/* 좌측 타임라인 (동그라미 + 세로선) */}
+        {/* 좌측 타임라인 */}
         <div className="relative flex flex-col items-center w-6 flex-shrink-0">
-          {/* 위쪽 세로선 */}
           {!isFirst && (
-            <div
-              className="absolute top-0 w-0.5 h-1/2"
-              style={{ backgroundColor: "#3D9651", opacity: 0.4 }}
-            />
+            <div className="absolute top-0 w-0.5 h-1/2" style={{ backgroundColor: "#3D9651", opacity: 0.4 }} />
           )}
-          {/* 아래쪽 세로선 */}
           {!isLast && (
-            <div
-              className="absolute bottom-0 w-0.5 h-1/2"
-              style={{ backgroundColor: "#3D9651", opacity: 0.4 }}
-            />
+            <div className="absolute bottom-0 w-0.5 h-1/2" style={{ backgroundColor: "#3D9651", opacity: 0.4 }} />
           )}
-          {/* 동그라미 */}
           <div
             className="relative z-10 rounded-full border-2"
             style={{
@@ -362,7 +365,6 @@ function StopRow({
           />
         </div>
 
-        {/* 정류장 이름 + 라벨 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span
@@ -385,7 +387,6 @@ function StopRow({
               </span>
             )}
           </div>
-          {/* 다음 도착 요약 (접힌 상태) */}
           {!isOpen && nextArrival && (
             <div className="text-[11px] text-gray-500 mt-0.5">
               {nextArrival.minutesLeft <= 60 ? (
@@ -403,7 +404,6 @@ function StopRow({
           )}
         </div>
 
-        {/* 우측 즐겨찾기 별 */}
         <span
           role="button"
           tabIndex={0}
@@ -426,93 +426,231 @@ function StopRow({
         <span className="text-gray-300 text-xs">{isOpen ? "▲" : "▼"}</span>
       </button>
 
-      {/* 펼친 도착 정보 */}
       {isOpen && (
         <div className="px-4 pb-3 pl-12 bg-gray-50 border-t border-gray-100">
-          {/* 실시간 카드 (학교 종점 + to-school만) */}
-          {liveData && liveData.ok && liveData.next && (
-            <div
-              className="mt-3 p-3 rounded-lg flex items-center justify-between"
-              style={{ backgroundColor: "#E8F5EE", border: "1px solid #3D9651" }}
-            >
-              <div>
-                <div className="text-[11px] font-semibold" style={{ color: "#3D9651" }}>
-                  🛰️ 실시간
-                </div>
-                <div className="text-[11px] text-gray-600 mt-0.5">
-                  {liveData.next.locationNo && `${liveData.next.locationNo}${t("cityBusStopNumber")} 전`}
-                  {liveData.next.seats !== null && liveData.next.seats >= 0 && ` · 좌석 ${liveData.next.seats}`}
-                </div>
-              </div>
-              <div className="text-2xl font-bold" style={{ color: "#E6007E" }}>
-                {liveData.next.remainingSec !== null ? Math.round(liveData.next.remainingSec / 60) : "—"}
-                <span className="text-[11px] text-gray-500 font-normal ml-1">{t("cityBusMinutesShort")}</span>
-              </div>
-            </div>
-          )}
-          {liveData && !liveData.ok && (
-            <div
-              className="mt-3 px-3 py-2 rounded text-[11px]"
-              style={{ backgroundColor: "#FFF8DD", color: "#7A5C00", border: "1px solid #FFE680" }}
-            >
-              {t("busArrivalApiKeyMissing")}
-            </div>
-          )}
+          {/* 실시간 카드 */}
+          <LiveCard
+            liveData={liveData}
+            liveLoading={liveLoading}
+            noStationForDirection={noStationForDirection}
+            onRefresh={onRefresh}
+            refreshDisabled={refreshDisabled}
+            t={t}
+          />
 
           {/* 시간표 기반 다음 N개 */}
-          <div className="mt-3 space-y-1.5">
-            {arrivals.length === 0 ? (
-              <div className="text-xs text-gray-500 py-2">⏰ {t("cityBusEnd")}</div>
-            ) : (
-              arrivals.map((a, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between py-1.5 px-2 rounded"
-                  style={i === 0 ? { backgroundColor: "white", border: "1px solid #D1D5DB" } : {}}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400 font-mono">#{a.trip}</span>
-                    <span className="text-xs font-mono font-semibold" style={{ color: "#11306E" }}>
-                      {a.arrivalTime}
-                    </span>
-                    {a.isEstimated && (
-                      <span
-                        className="text-[10px] px-1 py-0.5 rounded"
-                        style={{ backgroundColor: "#FFF8DD", color: "#7A5C00" }}
-                      >
-                        {t("cityBusEstimated")}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs">
-                    <b style={{ color: i === 0 ? "#E6007E" : "#6B7280" }}>{a.minutesLeft}</b>
-                    <span className="text-gray-500 ml-0.5">{t("cityBusMinutesShort")}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {arrivals.some((a) => a.isEstimated) && (
-            <p className="text-[10px] text-gray-500 mt-2">
-              💡 {t("cityBusEstimatedNote")}
-            </p>
-          )}
-          {isDestStop && direction === "to-school" && (
-            <div className="mt-2 flex justify-end">
-              <button
-                onClick={onRefresh}
-                disabled={refreshDisabled || liveLoading}
-                className="text-[11px] px-3 py-1 rounded border border-gray-200 hover:bg-white transition disabled:opacity-50 flex items-center gap-1"
-                style={{ color: "#3D9651" }}
-              >
-                <span className={liveLoading ? "inline-block animate-spin" : ""}>🔄</span>
-                {t("busArrivalRefresh")}
-              </button>
+          <div className="mt-3">
+            <div className="text-[11px] font-semibold text-gray-500 mb-1.5 px-1">
+              📋 {t("busScheduleUpcoming")} ({t("cityBusEstimated")})
             </div>
-          )}
+            <div className="space-y-1.5">
+              {arrivals.length === 0 ? (
+                <div className="text-xs text-gray-500 py-2 px-1">⏰ {t("cityBusEnd")}</div>
+              ) : (
+                arrivals.map((a, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between py-1.5 px-2 rounded"
+                    style={i === 0 ? { backgroundColor: "white", border: "1px solid #D1D5DB" } : {}}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-gray-400 font-mono">#{a.trip}</span>
+                      <span className="text-xs font-mono font-semibold" style={{ color: "#11306E" }}>
+                        {a.arrivalTime}
+                      </span>
+                    </div>
+                    <div className="text-xs">
+                      <b style={{ color: i === 0 ? "#E6007E" : "#6B7280" }}>{a.minutesLeft}</b>
+                      <span className="text-gray-500 ml-0.5">{t("cityBusMinutesShort")}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ==================== 실시간 도착 카드 ==================== */
+function LiveCard({
+  liveData,
+  liveLoading,
+  noStationForDirection,
+  onRefresh,
+  refreshDisabled,
+  t,
+}: {
+  liveData: ApiResponse | null;
+  liveLoading: boolean;
+  noStationForDirection: boolean;
+  onRefresh: () => void;
+  refreshDisabled: boolean;
+  t: (key: any) => string;
+}) {
+  if (noStationForDirection) {
+    return (
+      <div
+        className="mt-3 px-3 py-2 rounded text-[11px]"
+        style={{ backgroundColor: "#F3F4F6", color: "#6B7280", border: "1px solid #E5E7EB" }}
+      >
+        이 정류장은 반대 방향에서만 정차합니다.
+      </div>
+    );
+  }
+
+  if (liveLoading && !liveData) {
+    return (
+      <div className="mt-3 px-3 py-3 text-xs text-gray-500 text-center">
+        🛰️ 실시간 정보 불러오는 중...
+      </div>
+    );
+  }
+
+  if (!liveData) return null;
+
+  if (!liveData.ok) {
+    if (liveData.error === "API_KEY_MISSING") {
+      return (
+        <div
+          className="mt-3 px-3 py-2 rounded text-[11px]"
+          style={{ backgroundColor: "#FFF8DD", color: "#7A5C00", border: "1px solid #FFE680" }}
+        >
+          ⚠️ {t("busArrivalApiKeyMissing")}
+        </div>
+      );
+    }
+    return (
+      <div className="mt-3 px-3 py-2 rounded text-[11px] bg-red-50 text-red-700 border border-red-200">
+        ⚠️ 실시간 정보 없음 ({liveData.message})
+      </div>
+    );
+  }
+
+  const minutes1 = liveData.next?.remainingSec !== null && liveData.next?.remainingSec !== undefined
+    ? Math.round(liveData.next.remainingSec / 60)
+    : null;
+  const minutes2 = liveData.second?.remainingSec !== null && liveData.second?.remainingSec !== undefined
+    ? Math.round(liveData.second.remainingSec / 60)
+    : null;
+
+  // 의미 있는 데이터가 있는지 확인 (시점·종점은 PASS만 나올 수 있음)
+  const hasValidNext = minutes1 !== null;
+  const hasValidSecond = minutes2 !== null;
+  const flag1 = liveData.next?.flag;
+  const isPassOrNoBus = !hasValidNext && (flag1 === "PASS" || liveData.next === null);
+
+  return (
+    <div className="mt-3 space-y-2">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between px-1">
+        <span className="text-[11px] font-semibold" style={{ color: "#3D9651" }}>
+          🛰️ 실시간 도착 정보
+        </span>
+        <button
+          onClick={onRefresh}
+          disabled={refreshDisabled || liveLoading}
+          className="text-[11px] px-2 py-0.5 rounded border border-gray-200 hover:bg-white transition disabled:opacity-50 flex items-center gap-1"
+          style={{ color: "#3D9651" }}
+        >
+          <span className={liveLoading ? "inline-block animate-spin" : ""}>🔄</span>
+          새로고침
+        </button>
+      </div>
+
+      {/* 다음 버스 */}
+      {hasValidNext && liveData.next ? (
+        <div
+          className="p-3 rounded-lg"
+          style={{ backgroundColor: "#E8F5EE", border: "1px solid #3D9651" }}
+        >
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[11px] font-semibold" style={{ color: "#11306E" }}>
+              다음 버스
+            </span>
+            <span className="text-2xl font-bold" style={{ color: "#E6007E" }}>
+              {minutes1}
+              <span className="text-[11px] text-gray-500 font-normal ml-1">분 후</span>
+            </span>
+          </div>
+          <div className="text-[11px] text-gray-600 flex flex-wrap gap-x-3 gap-y-0.5">
+            {liveData.next.remainingStops !== null && (
+              <span>📍 {liveData.next.remainingStops}정거장 전</span>
+            )}
+            {liveData.next.seats !== null && liveData.next.seats >= 0 && (
+              <span>🪑 잔여 {liveData.next.seats}석</span>
+            )}
+            {liveData.next.plateNo && (
+              <span className="text-gray-400">🚌 {liveData.next.plateNo}</span>
+            )}
+          </div>
+        </div>
+      ) : isPassOrNoBus ? (
+        <div
+          className="px-3 py-2.5 rounded text-[11px]"
+          style={{ backgroundColor: "#F3F4F6", color: "#6B7280", border: "1px solid #E5E7EB" }}
+        >
+          🚌 현재 이 정류장에 도착 예정인 버스가 없습니다
+          <div className="text-[10px] text-gray-400 mt-1">
+            시점·종점 정류장은 도착 정보 없이 출발 정보만 제공됩니다. 아래 시간표를 참고해 주세요.
+          </div>
+        </div>
+      ) : (
+        <div className="px-3 py-2 rounded text-[11px] text-gray-500 bg-white border border-gray-200">
+          실시간 정보를 가져오는 중...
+        </div>
+      )}
+
+      {/* 다다음 버스 (의미 있는 데이터일 때만) */}
+      {hasValidSecond && liveData.second && (
+        <div
+          className="p-2.5 rounded-lg"
+          style={{ backgroundColor: "#F9FAFB", border: "1px solid #E5E7EB" }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-gray-600">다다음 버스</span>
+            <span className="text-base font-bold text-gray-600">
+              {minutes2}
+              <span className="text-[10px] text-gray-500 font-normal ml-1">분 후</span>
+            </span>
+          </div>
+          <div className="text-[10px] text-gray-500 mt-0.5 flex flex-wrap gap-x-3">
+            {liveData.second.remainingStops !== null && (
+              <span>{liveData.second.remainingStops}정거장 전</span>
+            )}
+            {liveData.second.seats !== null && liveData.second.seats >= 0 && (
+              <span>좌석 {liveData.second.seats}</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="text-[10px] text-gray-400 text-right px-1">
+        갱신: {new Date(liveData.updatedAt).toLocaleTimeString("ko-KR")} · 1분 자동
+      </div>
+    </div>
+  );
+}
+              {minutes2}
+              <span className="text-[10px] text-gray-500 font-normal ml-1">분 후</span>
+            </span>
+          </div>
+          <div className="text-[10px] text-gray-500 mt-0.5 flex flex-wrap gap-x-3">
+            {liveData.second.remainingStops !== null && (
+              <span>{liveData.second.remainingStops}정거장 전</span>
+            )}
+            {liveData.second.seats !== null && liveData.second.seats >= 0 && (
+              <span>좌석 {liveData.second.seats}</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="text-[10px] text-gray-400 text-right px-1">
+        갱신: {new Date(liveData.updatedAt).toLocaleTimeString("ko-KR")} · 1분 자동
+      </div>
     </div>
   );
 }
