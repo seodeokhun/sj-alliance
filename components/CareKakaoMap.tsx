@@ -210,8 +210,8 @@ export default function CareKakaoMap({
       )}
       <div
         ref={mapRef}
-        className="w-full h-full bg-gray-100 rounded-xl"
-        style={{ minHeight: "500px" }}
+        className="w-full h-full bg-gray-100"
+        style={{ minHeight: "400px" }}
       />
     </div>
   );

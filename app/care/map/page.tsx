@@ -55,7 +55,7 @@ export default function CareMapPage() {
   if (!mounted) return null;
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col">
+    <main className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       {/* 헤더 */}
       <header
         className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3"
@@ -122,9 +122,9 @@ export default function CareMapPage() {
         </div>
       </div>
 
-      {/* 지도 */}
-      <div className="flex-1 px-3 py-3">
-        <CareKakaoMap centers={filtered} className="w-full h-full" />
+      {/* 지도 - 화면 가득 */}
+      <div className="flex-1 relative">
+        <CareKakaoMap centers={filtered} className="absolute inset-0" />
       </div>
     </main>
   );
