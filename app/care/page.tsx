@@ -74,17 +74,26 @@ export default function CarePage() {
 
       {/* 히어로 */}
       <section className="px-5 py-6 text-white" style={{ backgroundColor: "#0E7490" }}>
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-xl font-bold mb-1">🏥 {t("careTitle")}</h2>
-          <p className="text-xs" style={{ color: "#A5F3FC" }}>
-            {t("careSubtitle")}
-          </p>
-          <div className="mt-3 text-2xl font-extrabold">
-            {CARE_CENTERS.length}
-            <span className="text-xs font-normal opacity-80 ml-1">
-              {t("careCenterCount")}
-            </span>
+        <div className="max-w-3xl mx-auto flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold mb-1">🏥 {t("careTitle")}</h2>
+            <p className="text-xs" style={{ color: "#A5F3FC" }}>
+              {t("careSubtitle")}
+            </p>
+            <div className="mt-3 text-2xl font-extrabold">
+              {CARE_CENTERS.length}
+              <span className="text-xs font-normal opacity-80 ml-1">
+                {t("careCenterCount")}
+              </span>
+            </div>
           </div>
+          <Link
+            href="/care/map"
+            className="flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-1.5"
+            style={{ backgroundColor: "white", color: "#0E7490" }}
+          >
+            🗺 {t("careViewMap")}
+          </Link>
         </div>
       </section>
 
@@ -237,6 +246,22 @@ function CenterCard({ center, t }: { center: CareCenter; t: (key: any) => string
             <span className="flex-shrink-0">📍</span>
             <span className="leading-relaxed">{center.address}</span>
           </div>
+        )}
+        {center.officePhone && (
+          <div className="flex items-center gap-1">
+            <span>☎</span>
+            <span>{center.officePhone}</span>
+          </div>
+        )}
+      </div>
+      <div className="mt-2 text-right">
+        <span className="text-[11px] font-medium" style={{ color: "#0E7490" }}>
+          {t("details")} →
+        </span>
+      </div>
+    </Link>
+  );
+}
         )}
         {center.officePhone && (
           <div className="flex items-center gap-1">

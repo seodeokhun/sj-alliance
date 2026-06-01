@@ -72,7 +72,8 @@ export default function Home() {
       descKey: "catCareDesc",
       bg: "#0E7490",
       subs: [
-        { href: "/care", labelKey: "careTitle", ready: true },
+        { href: "/care", labelKey: "subListStores", ready: true },
+        { href: "/care/map", labelKey: "subAllMap", ready: true },
       ],
     },
     {
