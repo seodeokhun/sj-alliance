@@ -197,7 +197,7 @@ export default function CareKakaoMap({
   }, [mapLoaded, centers, onMarkerClick]);
 
   return (
-    <div className={className} style={{ position: "relative" }}>
+    <div className={className}>
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-sm text-red-600 z-10">
           {error}
@@ -208,11 +208,7 @@ export default function CareKakaoMap({
           📍 위치 변환 중... {progress.done}/{progress.total}
         </div>
       )}
-      <div
-        ref={mapRef}
-        className="bg-gray-100"
-        style={{ position: "absolute", inset: 0 }}
-      />
+      <div ref={mapRef} className="w-full h-full bg-gray-100" />
     </div>
   );
 }
