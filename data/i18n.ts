@@ -1111,6 +1111,110 @@ export const TEXTS = {
     vi: "phút",
     uz: "daqiqa",
   },
+
+  // ==================== 요양보호사 취업 (Care) ====================
+  catCare: {
+    ko: "요양보호사 취업",
+    en: "Care Worker Jobs",
+    vi: "Việc làm hộ lý",
+    uz: "Yordamchi ish",
+  },
+  catCareDesc: {
+    ko: "전국 방문간호 센터 187곳 · 지부별 검색",
+    en: "187 home-care centers · Filter by region",
+    vi: "187 trung tâm chăm sóc · Lọc theo vùng",
+    uz: "187 markaz · Hudud boʻyicha qidirish",
+  },
+  careTitle: {
+    ko: "요양보호사 취업 센터",
+    en: "Care Worker Centers",
+    vi: "Trung tâm việc làm hộ lý",
+    uz: "Yordamchi ish markazlari",
+  },
+  careSubtitle: {
+    ko: "한국방문간호서비스연합회(KVN) 회원 센터 안내",
+    en: "Korean Visiting Nursing Network (KVN) member centers",
+    vi: "Các trung tâm thành viên KVN",
+    uz: "KVN aʼzo markazlari",
+  },
+  careAllBranches: {
+    ko: "전체",
+    en: "All",
+    vi: "Tất cả",
+    uz: "Hammasi",
+  },
+  careRecommended: {
+    ko: "🎯 서정대 추천",
+    en: "🎯 Recommended",
+    vi: "🎯 Đề xuất",
+    uz: "🎯 Tavsiya etilgan",
+  },
+  careRecommendedDesc: {
+    ko: "서정대 캠퍼스 근처 (경기·서울·인천)",
+    en: "Near Seojeong campus (Gyeonggi·Seoul·Incheon)",
+    vi: "Gần ĐH Seojeong",
+    uz: "Seojeongga yaqin",
+  },
+  careSearchPlaceholder: {
+    ko: "센터명·주소 검색...",
+    en: "Search center or address...",
+    vi: "Tìm trung tâm hoặc địa chỉ...",
+    uz: "Markaz yoki manzilni qidirish...",
+  },
+  careCenterCount: {
+    ko: "개 센터",
+    en: "centers",
+    vi: "trung tâm",
+    uz: "ta markaz",
+  },
+  careOfficePhone: {
+    ko: "사무실 전화",
+    en: "Office",
+    vi: "Văn phòng",
+    uz: "Ofis",
+  },
+  careEmail: {
+    ko: "이메일",
+    en: "Email",
+    vi: "Email",
+    uz: "Email",
+  },
+  careAddress: {
+    ko: "주소",
+    en: "Address",
+    vi: "Địa chỉ",
+    uz: "Manzil",
+  },
+  careCall: {
+    ko: "전화",
+    en: "Call",
+    vi: "Gọi",
+    uz: "Qoʻngʻiroq",
+  },
+  careSendEmail: {
+    ko: "메일 보내기",
+    en: "Email",
+    vi: "Gửi email",
+    uz: "Email yuborish",
+  },
+  careDirections: {
+    ko: "길찾기",
+    en: "Directions",
+    vi: "Chỉ đường",
+    uz: "Yoʻnalish",
+  },
+  careViewMap: {
+    ko: "지도에서 보기",
+    en: "View on map",
+    vi: "Xem trên bản đồ",
+    uz: "Xaritada koʻrish",
+  },
+  careNotice: {
+    ko: "센터 정보는 KVN 협회 회원사 공개 정보 기반입니다. 개인 연락처는 표시하지 않습니다.",
+    en: "Center info is from KVN member-public data. Personal contact details are not shown.",
+    vi: "Thông tin trung tâm dựa trên dữ liệu KVN. Liên hệ cá nhân không hiển thị.",
+    uz: "Markaz maʼlumotlari KVN aʼzolari ochiq maʼlumotlariga asoslangan. Shaxsiy aloqalar koʻrsatilmaydi.",
+  },
 };
 
 export function t(key: keyof typeof TEXTS, locale: Locale): string {

@@ -66,6 +66,16 @@ export default function Home() {
       ],
     },
     {
+      key: "care",
+      icon: "🏥",
+      titleKey: "catCare",
+      descKey: "catCareDesc",
+      bg: "#0E7490",
+      subs: [
+        { href: "/care", labelKey: "careTitle", ready: true },
+      ],
+    },
+    {
       key: "volunteer",
       icon: "🤝",
       titleKey: "catVolunteer",

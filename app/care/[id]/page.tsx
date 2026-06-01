@@ -1,0 +1,139 @@
+"use client";
+
+import { use } from "react";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { useLocale } from "@/lib/useLocale";
+import LangSwitcher from "@/components/LangSwitcher";
+import { CARE_CENTERS, BRANCH_META } from "@/data/care-centers";
+
+export default function CareDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const { locale, setLocale, t, mounted } = useLocale();
+
+  const center = CARE_CENTERS.find((c) => c.id === Number(id));
+  if (!center) notFound();
+
+  const meta = BRANCH_META[center.branch];
+
+  // 카카오맵 길찾기 URL (좌표 없어도 작동)
+  const kakaoSearchUrl = `https://map.kakao.com/link/search/${encodeURIComponent(
+    center.address || center.name
+  )}`;
+  const kakaoDirectionsUrl = `https://map.kakao.com/link/to/${encodeURIComponent(
+    center.name
+  )},${encodeURIComponent(center.address)}`;
+
+  if (!mounted) return null;
+
+  return (
+    <main className="min-h-screen bg-gray-50 pb-24">
+      {/* 헤더 */}
+      <header
+        className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3"
+        style={{ backgroundColor: "#11306E" }}
+      >
+        <Link href="/care" className="text-white text-xl leading-none hover:opacity-80 transition" aria-label="목록으로">
+          ←
+        </Link>
+        <h1 className="text-white font-semibold text-base flex items-center gap-2 flex-1">
+          🏥 {t("careTitle")}
+        </h1>
+        <LangSwitcher locale={locale} onChange={setLocale} compact />
+      </header>
+
+      {/* 센터 헤더 카드 */}
+      <section className="px-5 py-6 text-white" style={{ backgroundColor: "#0E7490" }}>
+        <div className="max-w-3xl mx-auto">
+          <span
+            className="inline-block text-[11px] px-2 py-0.5 rounded font-semibold mb-2"
+            style={{ color: meta.color, backgroundColor: "white" }}
+          >
+            {meta.label}
+          </span>
+          <h2 className="text-xl font-bold leading-tight">{center.name}</h2>
+        </div>
+      </section>
+
+      <div className="max-w-3xl mx-auto px-5 pt-5 space-y-3">
+        {/* 주소 */}
+        {center.address && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4">
+            <div className="text-[11px] font-semibold text-gray-500 mb-1">
+              📍 {t("careAddress")}
+            </div>
+            <div className="text-sm leading-relaxed" style={{ color: "#111827" }}>
+              {center.address}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <a
+                href={kakaoDirectionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-center py-2 rounded-lg text-xs font-semibold text-white"
+                style={{ backgroundColor: "#0E7490" }}
+              >
+                🧭 {t("careDirections")}
+              </a>
+              <a
+                href={kakaoSearchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-center py-2 rounded-lg text-xs font-semibold border-2"
+                style={{ borderColor: "#0E7490", color: "#0E7490" }}
+              >
+                🗺 {t("careViewMap")}
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* 사무실 전화 */}
+        {center.officePhone && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4">
+            <div className="text-[11px] font-semibold text-gray-500 mb-1">
+              ☎ {t("careOfficePhone")}
+            </div>
+            <div className="text-sm font-mono mb-3" style={{ color: "#111827" }}>
+              {center.officePhone}
+            </div>
+            <a
+              href={`tel:${center.officePhone.replace(/[^0-9+]/g, "")}`}
+              className="block text-center py-2.5 rounded-lg text-sm font-semibold text-white"
+              style={{ backgroundColor: "#11306E" }}
+            >
+              📞 {t("careCall")}
+            </a>
+          </div>
+        )}
+
+        {/* 이메일 */}
+        {center.email && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4">
+            <div className="text-[11px] font-semibold text-gray-500 mb-1">
+              ✉️ {t("careEmail")}
+            </div>
+            <div className="text-sm break-all mb-3" style={{ color: "#111827" }}>
+              {center.email}
+            </div>
+            <a
+              href={`mailto:${center.email}`}
+              className="block text-center py-2.5 rounded-lg text-sm font-semibold border-2"
+              style={{ borderColor: "#11306E", color: "#11306E" }}
+            >
+              ✉️ {t("careSendEmail")}
+            </a>
+          </div>
+        )}
+
+        {/* 안내 */}
+        <div
+          className="px-4 py-3 rounded-lg text-[11px]"
+          style={{ backgroundColor: "#F9FAFB", color: "#6B7280", border: "1px solid #E5E7EB" }}
+        >
+          💡 {t("careNotice")}
+        </div>
+      </div>
+    </main>
+  );
+}
