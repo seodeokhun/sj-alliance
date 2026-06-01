@@ -197,7 +197,7 @@ export default function CareKakaoMap({
   }, [mapLoaded, centers, onMarkerClick]);
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={className} style={{ position: "relative" }}>
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-sm text-red-600 z-10">
           {error}
@@ -210,8 +210,8 @@ export default function CareKakaoMap({
       )}
       <div
         ref={mapRef}
-        className="w-full h-full bg-gray-100"
-        style={{ minHeight: "400px" }}
+        className="bg-gray-100"
+        style={{ position: "absolute", inset: 0 }}
       />
     </div>
   );
