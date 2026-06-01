@@ -262,19 +262,3 @@ function CenterCard({ center, t }: { center: CareCenter; t: (key: any) => string
     </Link>
   );
 }
-        )}
-        {center.officePhone && (
-          <div className="flex items-center gap-1">
-            <span>☎</span>
-            <span>{center.officePhone}</span>
-          </div>
-        )}
-      </div>
-      <div className="mt-2 text-right">
-        <span className="text-[11px] font-medium" style={{ color: "#0E7490" }}>
-          {t("details")} →
-        </span>
-      </div>
-    </Link>
-  );
-}
