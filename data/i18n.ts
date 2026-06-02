@@ -1125,6 +1125,18 @@ export const TEXTS = {
     vi: "187 trung tâm chăm sóc · Lọc theo vùng",
     uz: "187 markaz · Hudud boʻyicha qidirish",
   },
+  careHireableCenters: {
+    ko: "취업 가능 센터",
+    en: "Hiring Centers",
+    vi: "Trung tâm tuyển dụng",
+    uz: "Ish beruvchi markazlar",
+  },
+  careHireableCentersMap: {
+    ko: "취업 가능 센터 지도",
+    en: "Hiring Centers Map",
+    vi: "Bản đồ tuyển dụng",
+    uz: "Ish markazlari xaritasi",
+  },
   careTitle: {
     ko: "요양보호사 취업 센터",
     en: "Care Worker Centers",
@@ -1211,7 +1223,7 @@ export const TEXTS = {
   },
   careNotice: {
     ko: "센터 정보는 KVN 협회 회원사 공개 정보 기반입니다. 개인 연락처는 표시하지 않습니다.",
-    en: "Center info is from KVN member-public data. Personal contact details are not shown.",
+    en: "Center info is from KVN member-public data. Personal contacts are not shown.",
     vi: "Thông tin trung tâm dựa trên dữ liệu KVN. Liên hệ cá nhân không hiển thị.",
     uz: "Markaz maʼlumotlari KVN aʼzolari ochiq maʼlumotlariga asoslangan. Shaxsiy aloqalar koʻrsatilmaydi.",
   },

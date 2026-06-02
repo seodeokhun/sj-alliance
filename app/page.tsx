@@ -33,6 +33,17 @@ export default function Home() {
       ],
     },
     {
+      key: "care",
+      icon: "🏥",
+      titleKey: "catCare",
+      descKey: "catCareDesc",
+      bg: "#0E7490",
+      subs: [
+        { href: "/care", labelKey: "careHireableCenters", ready: true },
+        { href: "/care/map", labelKey: "careHireableCentersMap", ready: true },
+      ],
+    },
+    {
       key: "lost",
       icon: "📦",
       titleKey: "catLost",
@@ -63,17 +74,6 @@ export default function Home() {
       subs: [
         { href: "/shuttle?tab=school", labelKey: "subCommuteSchool", ready: true },
         { href: "/shuttle?tab=city", labelKey: "subCommuteCity", ready: true },
-      ],
-    },
-    {
-      key: "care",
-      icon: "🏥",
-      titleKey: "catCare",
-      descKey: "catCareDesc",
-      bg: "#0E7490",
-      subs: [
-        { href: "/care", labelKey: "subListStores", ready: true },
-        { href: "/care/map", labelKey: "subAllMap", ready: true },
       ],
     },
     {
