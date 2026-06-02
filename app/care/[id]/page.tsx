@@ -162,32 +162,3 @@ export default function CareDetailPage({ params }: { params: Promise<{ id: strin
     </main>
   );
 }
-        {center.email && (
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
-            <div className="text-[11px] font-semibold text-gray-500 mb-1">
-              ✉️ {t("careEmail")}
-            </div>
-            <div className="text-sm break-all mb-3" style={{ color: "#111827" }}>
-              {center.email}
-            </div>
-            <a
-              href={`mailto:${center.email}`}
-              className="block text-center py-2.5 rounded-lg text-sm font-semibold border-2"
-              style={{ borderColor: "#11306E", color: "#11306E" }}
-            >
-              ✉️ {t("careSendEmail")}
-            </a>
-          </div>
-        )}
-
-        {/* 안내 */}
-        <div
-          className="px-4 py-3 rounded-lg text-[11px]"
-          style={{ backgroundColor: "#F9FAFB", color: "#6B7280", border: "1px solid #E5E7EB" }}
-        >
-          💡 {t("careNotice")}
-        </div>
-      </div>
-    </main>
-  );
-}
