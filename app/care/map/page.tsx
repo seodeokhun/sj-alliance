@@ -9,10 +9,11 @@ import {
   CARE_CENTERS,
   BRANCH_META,
   RECOMMENDED_BRANCHES,
+  isF2REligible,
   type CareCenterBranch,
 } from "@/data/care-centers";
 
-type FilterKey = "all" | "recommended" | CareCenterBranch;
+type FilterKey = "all" | "recommended" | "f2r" | CareCenterBranch;
 
 export default function CareMapPage() {
   const { locale, setLocale, t, mounted } = useLocale();
@@ -31,6 +32,8 @@ export default function CareMapPage() {
     let list = CARE_CENTERS.filter((c) => c.address); // 주소 있는 것만
     if (filter === "recommended") {
       list = list.filter((c) => RECOMMENDED_BRANCHES.includes(c.branch));
+    } else if (filter === "f2r") {
+      list = list.filter((c) => isF2REligible(c.address));
     } else if (filter !== "all") {
       list = list.filter((c) => c.branch === filter);
     }
@@ -92,6 +95,13 @@ export default function CareMapPage() {
             active={filter === "recommended"}
             onClick={() => setFilter("recommended")}
             color="#0E7490"
+          />
+          <FilterChip
+            label="🌏 F-2-R"
+            count={CARE_CENTERS.filter((c) => isF2REligible(c.address)).length}
+            active={filter === "f2r"}
+            onClick={() => setFilter("f2r")}
+            color="#CA8A04"
           />
           <FilterChip
             label={t("careAllBranches")}
