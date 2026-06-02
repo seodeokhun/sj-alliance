@@ -54,7 +54,7 @@ export default function CarePage() {
     "경기", "서울", "인천",
     "강원", "광주전남", "대전충청",
     "부산제주", "경남", "전북",
-    "대구경북", "울산경주", "기타",
+    "대구경북", "울산경주",
   ];
 
   if (!mounted) return null;
