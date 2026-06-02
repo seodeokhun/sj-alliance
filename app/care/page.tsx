@@ -8,11 +8,12 @@ import {
   CARE_CENTERS,
   BRANCH_META,
   RECOMMENDED_BRANCHES,
+  isF2REligible,
   type CareCenter,
   type CareCenterBranch,
 } from "@/data/care-centers";
 
-type FilterKey = "all" | "recommended" | CareCenterBranch;
+type FilterKey = "all" | "recommended" | "f2r" | CareCenterBranch;
 
 export default function CarePage() {
   const { locale, setLocale, t, mounted } = useLocale();
@@ -33,6 +34,8 @@ export default function CarePage() {
     let list = CARE_CENTERS;
     if (filter === "recommended") {
       list = list.filter((c) => RECOMMENDED_BRANCHES.includes(c.branch));
+    } else if (filter === "f2r") {
+      list = list.filter((c) => isF2REligible(c.address));
     } else if (filter !== "all") {
       list = list.filter((c) => c.branch === filter);
     }
@@ -115,7 +118,7 @@ export default function CarePage() {
         {/* 추천 카드 */}
         <button
           onClick={() => setFilter(filter === "recommended" ? "all" : "recommended")}
-          className={`w-full mb-3 px-4 py-3 rounded-xl border-2 transition text-left flex items-center justify-between ${
+          className={`w-full mb-2 px-4 py-3 rounded-xl border-2 transition text-left flex items-center justify-between ${
             filter === "recommended" ? "" : "bg-white"
           }`}
           style={{
@@ -133,6 +136,30 @@ export default function CarePage() {
           </div>
           <div className="text-base font-bold" style={{ color: "#0E7490" }}>
             {CARE_CENTERS.filter((c) => RECOMMENDED_BRANCHES.includes(c.branch)).length}
+          </div>
+        </button>
+
+        {/* F-2-R 비자 필터 카드 */}
+        <button
+          onClick={() => setFilter(filter === "f2r" ? "all" : "f2r")}
+          className={`w-full mb-3 px-4 py-3 rounded-xl border-2 transition text-left flex items-center justify-between ${
+            filter === "f2r" ? "" : "bg-white"
+          }`}
+          style={{
+            borderColor: filter === "f2r" ? "#CA8A04" : "#E5E7EB",
+            backgroundColor: filter === "f2r" ? "#FEF9C3" : "white",
+          }}
+        >
+          <div>
+            <div className="text-sm font-bold" style={{ color: "#CA8A04" }}>
+              {t("careF2RFilter")}
+            </div>
+            <div className="text-[11px] text-gray-500 mt-0.5">
+              외국인 유학생 졸업 후 거주 비자 신청 가능 지역
+            </div>
+          </div>
+          <div className="text-base font-bold" style={{ color: "#CA8A04" }}>
+            {CARE_CENTERS.filter((c) => isF2REligible(c.address)).length}
           </div>
         </button>
 
@@ -224,18 +251,28 @@ function FilterChip({
 
 function CenterCard({ center, t }: { center: CareCenter; t: (key: any) => string }) {
   const meta = BRANCH_META[center.branch];
+  const f2r = isF2REligible(center.address);
   return (
     <Link
       href={`/care/${center.id}`}
       className="block bg-white border border-gray-200 rounded-2xl p-4 hover:border-cyan-700 hover:shadow-sm transition"
     >
-      <div className="flex items-start gap-2 mb-2">
+      <div className="flex items-start gap-2 mb-2 flex-wrap">
         <span
           className="text-[10px] px-2 py-0.5 rounded font-semibold flex-shrink-0"
           style={{ color: meta.color, backgroundColor: meta.bg }}
         >
           {meta.label}
         </span>
+        {f2r && (
+          <span
+            className="text-[10px] px-2 py-0.5 rounded font-bold flex-shrink-0"
+            style={{ color: "#CA8A04", backgroundColor: "#FEF9C3", border: "1px solid #FDE047" }}
+            title="F-2-R 비자 신청 가능 지역"
+          >
+            🌏 {t("careF2RBadge")}
+          </span>
+        )}
         <h3 className="text-sm font-bold flex-1" style={{ color: "#11306E" }}>
           {center.name}
         </h3>

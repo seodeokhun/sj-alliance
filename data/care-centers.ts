@@ -67,7 +67,6 @@ export const CARE_CENTERS: CareCenter[] = [
   { id: 20, branch: "경기", name: "신경옥요양센터", address: "경기 용인시 처인구 중부대로 1504번길 33 신경옥 요양센터", officePhone: "031-338-5038", email: "kikigi@naver.com" },
   { id: 21, branch: "경기", name: "온누리종합복지센터", address: "경기도 안양시 동안구 관악대로 302 201호", officePhone: "", email: "tree.599@daum.net" },
   { id: 22, branch: "경기", name: "우리사랑재가센터", address: "경기도 부천시 상이로 9번길 8-16", officePhone: "", email: "welove1170@naver.com" },
-  { id: 23, branch: "경기", name: "참사랑요양보호사교육원", address: "", officePhone: "", email: "chamsarangcare@naver.com" },
   { id: 24, branch: "경기", name: "아름다운사람들재가장기요양센터", address: "경기도 안양시 동안구 관악대로 405 2층 (관양동)", officePhone: "031-386-8094", email: "familytyh61@naver.com" },
   { id: 25, branch: "경기", name: "명은간호전문요양원", address: "경기도 수원시 장안구 정자로 166 명은간호전문요양원", officePhone: "031-242-1332", email: "mehc1337@daum.net" },
   { id: 26, branch: "경기", name: "가인복지센터", address: "부천시 원미구 소향로 37번길 31-15 한림프라자 404호", officePhone: "032-323-9960", email: "s3229kk@hanmail.net" },
@@ -112,7 +111,6 @@ export const CARE_CENTERS: CareCenter[] = [
   { id: 70, branch: "광주전남", name: "사랑손통합재가센터", address: "광주광역시 남구 효덕로 307 1층 (송하동, 금당빌딩)", officePhone: "070-4348-6091", email: "hyuna5228@daum.net" },
   { id: 71, branch: "광주전남", name: "우리동네방문간호센터", address: "전라남도 광양시 중동로 75-11 2층202호 (중동)", officePhone: "061-913-0188", email: "nursing202103@naver.com" },
   { id: 72, branch: "광주전남", name: "기쁨간호·요양센터", address: "광주광역시 북구 임방울대로1042번길 14-1 102동301호 (신용동, 첨단자이1단지)", officePhone: "062-456-6156", email: "m6119@hanmail.net" },
-  { id: 73, branch: "광주전남", name: "광주대학교 조교수", address: "", officePhone: "", email: "gwakmj@gwangju.ac.kr" },
   { id: 74, branch: "광주전남", name: "365간호요양복지센터", address: "광주광역시 서구 화정로 81", officePhone: "062-416-7090", email: "kysyry@naver.com" },
   { id: 75, branch: "광주전남", name: "좋은날방문간호센터", address: "광주광역시 북구 천지인로 191 (문흥동, 문흥제일파크)", officePhone: "062-261-1588", email: "hye145986@naver.com" },
   { id: 76, branch: "광주전남", name: "완도방문간호센터", address: "전남 완도군 고금면 고금로 594-1", officePhone: "061-555-0431", email: "devilmj82@naver.com" },
@@ -129,7 +127,6 @@ export const CARE_CENTERS: CareCenter[] = [
   { id: 90, branch: "대구경북", name: "새봄방문간호센터", address: "경북 의성군 의성읍 홍술로 192-1 (2층)새봄 방문 간호센터", officePhone: "", email: "indian8830@naver.com" },
   { id: 91, branch: "대구경북", name: "대구간호재가노인복지센터", address: "대구광역시 수성구 명덕로73길 60-20 3층 (수성동1가)", officePhone: "053-744-0905", email: "canna905@naver.com" },
   { id: 92, branch: "대구경북", name: "다사랑재활전문주간보호", address: "대구 수성구 들안로 159", officePhone: "053-744-2619", email: "tdc00750@naver.com" },
-  { id: 93, branch: "대구경북", name: "가일노인복지센터", address: "", officePhone: "", email: "17411@hanmail.net" },
   { id: 94, branch: "대구경북", name: "(the)더드림노인복지센터", address: "대구 달성군 하빈면 달구벌대로 55길 8 2", officePhone: "053-262-8867", email: "wnc8867@naver.com" },
   { id: 95, branch: "대구경북", name: "대구다은재가방문요양간호센터", address: "대구광역시 동구 신천동 740-25", officePhone: "053-945-5488", email: "suibi1004@hanmail.net" },
   { id: 96, branch: "대구경북", name: "한결재가방문간호센터", address: "대구광역시 달서구 용산동 성지로 14길 9 1층", officePhone: "053-566-2514", email: "youjinx717@daum.net" },
@@ -157,7 +154,6 @@ export const CARE_CENTERS: CareCenter[] = [
   { id: 126, branch: "대전충청", name: "굿널스아산방문간호센터", address: "충청남도 천안시 동남구 통정7길 5-6 (신방동)", officePhone: "041-572-7703", email: "liy-green@hanmail.net" },
   { id: 138, branch: "부산제주", name: "해운대재활주간보호센터", address: "부산 해운대구 양운로 98 (좌동, 대하프라자) 404호", officePhone: "", email: "skyun0078@naver.com" },
   { id: 139, branch: "부산제주", name: "제주두성통합재가센터", address: "제주시 전농로 44 2층", officePhone: "064-901-4077", email: "dooseong_66@naver.com" },
-  { id: 140, branch: "부산제주", name: "오픈예정", address: "", officePhone: "", email: "yoo1237@naver.com" },
   { id: 141, branch: "부산제주", name: "늘곁에재가복지센터", address: "부산시 수영로 282 현대오피스텔 206호", officePhone: "051-625-8804", email: "kkkstone@nate.com" },
   { id: 142, branch: "부산제주", name: "골드통합복지센터", address: "부산시 수영구 망미로 8번길 39-1", officePhone: "051-754-6555", email: "jar2056@naver.com" },
   { id: 143, branch: "부산제주", name: "가온재가복지센터", address: "부산광역시 남구 유엔로 120번 가길 31 2층 가온재가복지센터", officePhone: "051-626-2229", email: "moonhb2011@naver.com" },
@@ -173,7 +169,6 @@ export const CARE_CENTERS: CareCenter[] = [
   { id: 153, branch: "부산제주", name: "간호돌봄 재가복지센터", address: "부산시 동래구 아시아드대로 171번길 26", officePhone: "051-710-5776", email: "suh5617@hanmail.net" },
   { id: 154, branch: "부산제주", name: "정샘간호재가센터", address: "부산광역시 부산진구 당감로 108 112동102호 (부암동)", officePhone: "051-803-7177", email: "jungsamcare@naver.com" },
   { id: 155, branch: "부산제주", name: "㈜간호박사종합재가센터", address: "부산 동구 수정중로 28", officePhone: "051-463-3300", email: "Jmesh@hanmail.net" },
-  { id: 167, branch: "서울", name: "다시봄간호요양센터", address: "", officePhone: "", email: "smile5124@naver.com" },
   { id: 168, branch: "서울", name: "백세로방문간호", address: "송파구 중대로 101 동부썬빌 5층 513호", officePhone: "", email: "joliyang@naver.com" },
   { id: 169, branch: "서울", name: "나이팅게일데이케어센터/나이팅게일방문간호센터", address: "서울시 양천구 신율로 304 5층", officePhone: "02-2645-3698", email: "nightingale22@naver.com" },
   { id: 170, branch: "서울", name: "서울방문요양센터", address: "동작구 서달로 8가길 1", officePhone: "", email: "sycho1000@hanmail.net" },
@@ -195,7 +190,6 @@ export const CARE_CENTERS: CareCenter[] = [
   { id: 186, branch: "서울", name: "서울종합간호요양센터", address: "마포구 숭문길 58 201호", officePhone: "02-701-9963", email: "minagge@hanmail.net" },
   { id: 187, branch: "서울", name: "비지팅엔젤스창동", address: "도봉구 덕릉로59가길 16 1층", officePhone: "02-991-6909", email: "kpe6909@gmail.com" },
   { id: 188, branch: "서울", name: "자매사랑재가복지센터", address: "경기도 양주시 백석읍 꿈나무로 24", officePhone: "031-877-1080", email: "67ilwoo@hanmail.net" },
-  { id: 189, branch: "서울", name: "사랑나눔요양센터", address: "", officePhone: "", email: "sarangcare@naver.com" },
   { id: 190, branch: "서울", name: "서울요양복지센터", address: "구로구 가마산로 229 208호", officePhone: "02-6408-6600", email: "khomecare@hanmail.net" },
   { id: 191, branch: "서울", name: "주식회사웰케어스테이션", address: "서울특별시 강남구 봉은사로 114길 38 404호", officePhone: "", email: "brian@wellcarestation.com" },
   { id: 203, branch: "서울", name: "전국간호요양센터(2026)", address: "zow75@naver.com", officePhone: "", email: "sotong05@daum.net" },
@@ -223,7 +217,6 @@ export const CARE_CENTERS: CareCenter[] = [
   { id: 228, branch: "인천", name: "믿음노인복지센터", address: "인천광역시 계양구 장제로 718 6층", officePhone: "032-548-0601", email: "98care@naver.com" },
   { id: 229, branch: "인천", name: "사랑샘 재가노인복지센터", address: "인천광역시 서구 건지로334번길 9-1 2층 (가좌동, 서보빌딩)", officePhone: "032-577-4328", email: "bitnaeri2003@hanmail.net" },
   { id: 238, branch: "인천", name: "환영간호전문요양원", address: "인천 서구 경서로 56번길 15-5", officePhone: "", email: "lim20712@inha.ac.kr" },
-  { id: 239, branch: "기타", name: "임원", address: "", officePhone: "", email: "newegg79@gmail.com" },
   { id: 240, branch: "전북", name: "부안방문간호센터", address: "전북 부안군 부안읍 용계길 49 1층", officePhone: "063-581-2088", email: "ddoga72@naver.com" },
   { id: 241, branch: "전북", name: "엔케어재가복지센터/엔케어재가노인복지센터", address: "54971 전북특별자치도 전주시 완산구 메너머3길 26-6 (중화산동2가) 1층", officePhone: "063-223-6065", email: "ncare23@naver.com" },
   { id: 242, branch: "전북", name: "정다운방문간호센터", address: "전북특별자치도 고창군 성내면 내안길 7", officePhone: "063-563-5486", email: "pj5480@hanmail.net" },
@@ -238,3 +231,38 @@ export const CARE_CENTERS: CareCenter[] = [
   { id: 251, branch: "전북", name: "다인재가복지센터", address: "전북특별자치도 전주시 완산구 산월1길 17 (중화산동2가)", officePhone: "063-226-8012", email: "leehy8012@hanmail.net" },
   { id: 252, branch: "전북", name: "정현방문간호센터", address: "전라북도 전주시 완산구 맏내로 147-10 (평화동2가)", officePhone: "063-237-1006", email: "boik2003@naver.com" },
 ];
+
+/* ==================== F-2-R 비자 (지역 특화 비자) 지정 인구감소지역 89개 ==================== */
+/**
+ * 행정안전부 지정 인구감소지역 (2021~2026, F-2-R 비자 신청 가능 지역)
+ * 외국인 유학생이 졸업 후 해당 지역에 취업·거주하면 F-2 거주 비자 신청 가능.
+ * 시도별 시군구 키워드 매칭.
+ */
+const F2R_REGIONS: Record<string, string[]> = {
+  "부산": ["동구", "서구", "영도구"],
+  "대구": ["남구", "서구"],
+  "인천": ["강화군", "옹진군"],
+  "경기": ["가평군", "연천군"],
+  "강원": ["고성군", "동해시", "삼척시", "양구군", "양양군", "영월군", "정선군", "철원군", "태백시", "평창군", "화천군", "횡성군"],
+  "충북": ["괴산군", "단양군", "보은군", "영동군", "옥천군", "음성군", "제천시"],
+  "충남": ["공주시", "금산군", "논산시", "보령시", "부여군", "서천군", "예산군", "청양군", "태안군", "홍성군"],
+  "전북": ["고창군", "김제시", "남원시", "무주군", "부안군", "순창군", "임실군", "장수군", "정읍시", "진안군"],
+  "전남": ["강진군", "고흥군", "곡성군", "구례군", "담양군", "보성군", "신안군", "영광군", "영암군", "완도군", "장성군", "장흥군", "진도군", "함평군", "해남군", "화순군"],
+  "경북": ["고령군", "봉화군", "상주시", "성주군", "안동시", "영덕군", "영양군", "영주시", "영천시", "울릉군", "울진군", "의성군", "청도군", "청송군", "문경시", "예천군"],
+  "경남": ["거창군", "고성군", "남해군", "밀양시", "산청군", "의령군", "창녕군", "하동군", "함안군", "함양군", "합천군"],
+};
+
+/** 주소가 F-2-R 비자 가능 지역인지 판정 */
+export function isF2REligible(address: string): boolean {
+  if (!address) return false;
+  for (const [sido, sigungus] of Object.entries(F2R_REGIONS)) {
+    if (!address.includes(sido)) continue;
+    if (sigungus.some((sg) => address.includes(sg))) return true;
+  }
+  return false;
+}
+
+/** F-2-R 비자 가능 센터만 반환 */
+export function getF2REligibleCenters(centers: CareCenter[] = CARE_CENTERS): CareCenter[] {
+  return centers.filter((c) => isF2REligible(c.address));
+}

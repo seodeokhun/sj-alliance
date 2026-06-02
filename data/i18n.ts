@@ -1227,6 +1227,24 @@ export const TEXTS = {
     vi: "Thông tin trung tâm dựa trên dữ liệu KVN. Liên hệ cá nhân không hiển thị.",
     uz: "Markaz maʼlumotlari KVN aʼzolari ochiq maʼlumotlariga asoslangan. Shaxsiy aloqalar koʻrsatilmaydi.",
   },
+  careF2RBadge: {
+    ko: "F-2-R 비자",
+    en: "F-2-R Visa",
+    vi: "Visa F-2-R",
+    uz: "F-2-R vizasi",
+  },
+  careF2RFilter: {
+    ko: "🌏 F-2-R 비자 가능",
+    en: "🌏 F-2-R Eligible",
+    vi: "🌏 Đủ điều kiện F-2-R",
+    uz: "🌏 F-2-R mumkin",
+  },
+  careF2RNotice: {
+    ko: "이 센터는 행정안전부 지정 인구감소지역에 위치해 외국인 유학생이 졸업 후 취업 시 F-2-R(지역 특화) 비자 신청이 가능합니다.",
+    en: "This center is in a government-designated population-decline region. Foreign graduates who work here may apply for F-2-R (regional) visa.",
+    vi: "Trung tâm này thuộc khu vực giảm dân số do chính phủ chỉ định. Sinh viên quốc tế tốt nghiệp làm việc tại đây có thể nộp visa F-2-R.",
+    uz: "Bu markaz aholisi kamayib borayotgan hududda joylashgan. Bu yerda ishlovchi xorijiy bitiruvchilar F-2-R vizasiga ariza topshirishlari mumkin.",
+  },
 };
 
 export function t(key: keyof typeof TEXTS, locale: Locale): string {
