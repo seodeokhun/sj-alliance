@@ -32,17 +32,18 @@ export default function Home() {
         { href: "/map", labelKey: "subAllMap", ready: true },
       ],
     },
-    {
-      key: "care",
-      icon: "🏥",
-      titleKey: "catCare",
-      descKey: "catCareDesc",
-      bg: "#0E7490",
-      subs: [
-        { href: "/care", labelKey: "careHireableCenters", ready: true },
-        { href: "/care/map", labelKey: "careHireableCentersMap", ready: true },
-      ],
-    },
+    // 제출용 임시 숨김 (복원 시 주석 해제)
+    // {
+    //   key: "care",
+    //   icon: "🏥",
+    //   titleKey: "catCare",
+    //   descKey: "catCareDesc",
+    //   bg: "#0E7490",
+    //   subs: [
+    //     { href: "/care", labelKey: "careHireableCenters", ready: true },
+    //     { href: "/care/map", labelKey: "careHireableCentersMap", ready: true },
+    //   ],
+    // },
     {
       key: "lost",
       icon: "📦",
