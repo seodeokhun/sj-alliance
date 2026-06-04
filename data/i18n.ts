@@ -1114,10 +1114,10 @@ export const TEXTS = {
 
   // ==================== 요양보호사 취업 (Care) ====================
   catCare: {
-    ko: "요양보호사 취업",
-    en: "Care Worker Jobs",
-    vi: "Việc làm hộ lý",
-    uz: "Yordamchi ish",
+    ko: "글로벌 요양보호사 취업",
+    en: "Global Care Worker Jobs",
+    vi: "Việc làm hộ lý toàn cầu",
+    uz: "Global yordamchi ish",
   },
   catCareDesc: {
     ko: "전국 방문간호 센터 187곳 · 지부별 검색",
@@ -1138,10 +1138,10 @@ export const TEXTS = {
     uz: "Ish markazlari xaritasi",
   },
   careTitle: {
-    ko: "요양보호사 취업 센터",
-    en: "Care Worker Centers",
-    vi: "Trung tâm việc làm hộ lý",
-    uz: "Yordamchi ish markazlari",
+    ko: "글로벌 요양보호사 취업 센터",
+    en: "Global Care Worker Centers",
+    vi: "Trung tâm việc làm hộ lý toàn cầu",
+    uz: "Global yordamchi ish markazlari",
   },
   careSubtitle: {
     ko: "한국방문간호서비스연합회(KVN) 회원 센터 안내",
