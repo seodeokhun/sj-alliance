@@ -23,15 +23,27 @@ export default function ApplicationsList() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
 
+  async function fetchData() {
+    setLoading(true);
+    const { data } = await supabase
+      .from("alliance_applications")
+      .select("id, store_name, industry, status, created_at")
+      .order("created_at", { ascending: false });
+    setItems(data || []);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("alliance_applications")
-        .select("id, store_name, industry, status, created_at")
-        .order("created_at", { ascending: false });
-      setItems(data || []);
-      setLoading(false);
-    })();
+    fetchData();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchData();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", fetchData);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", fetchData);
+    };
   }, []);
 
   const filtered = filter === "all" ? items : items.filter((i) => i.status === filter);
@@ -46,7 +58,16 @@ export default function ApplicationsList() {
     <main className="min-h-screen bg-gray-50">
       <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
         <Link href="/partner" className="text-white text-xl">←</Link>
-        <h1 className="text-white font-semibold">📄 신청 내역</h1>
+        <h1 className="text-white font-semibold flex-1">📄 신청 내역</h1>
+        <button
+          onClick={fetchData}
+          disabled={loading}
+          className="text-white text-lg leading-none hover:opacity-70 transition disabled:opacity-40"
+          aria-label="새로고침"
+          title="새로고침"
+        >
+          {loading ? "⏳" : "🔄"}
+        </button>
       </header>
 
       <div className="px-5 py-3 bg-white border-b border-gray-200">

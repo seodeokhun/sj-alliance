@@ -35,15 +35,27 @@ export default function AdminPage() {
   const isAdmin = true;
   const authed = true;
 
+  async function fetchData() {
+    setLoading(true);
+    const { data } = await supabase
+      .from("alliance_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setApps(data || []);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("alliance_applications")
-        .select("*")
-        .order("created_at", { ascending: false });
-      setApps(data || []);
-      setLoading(false);
-    })();
+    fetchData();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchData();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", fetchData);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", fetchData);
+    };
   }, []);
 
   const filteredApps = statusFilter === "all"
@@ -90,7 +102,16 @@ export default function AdminPage() {
     <main className="min-h-screen bg-gray-50">
       <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
         <Link href="/alliance" className="text-white text-xl">←</Link>
-        <h1 className="text-white font-semibold">📋 신청 관리 <span className="text-xs ml-2" style={{ color: "#FFD500" }}>(관리자)</span></h1>
+        <h1 className="text-white font-semibold flex-1">📋 신청 관리 <span className="text-xs ml-2" style={{ color: "#FFD500" }}>(관리자)</span></h1>
+        <button
+          onClick={fetchData}
+          disabled={loading}
+          className="text-white text-lg leading-none hover:opacity-70 transition disabled:opacity-40"
+          aria-label="새로고침"
+          title="새로고침"
+        >
+          {loading ? "⏳" : "🔄"}
+        </button>
       </header>
 
       <div className="px-5 py-3 bg-white border-b border-gray-200 sticky top-[60px] z-30">
