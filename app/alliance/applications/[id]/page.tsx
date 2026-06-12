@@ -68,6 +68,23 @@ export default function ApplicationDetail({ params }: { params: Promise<{ id: st
     setApp(data);
   }
 
+  async function handleDelete() {
+    if (!app) return;
+    if (!confirm("정말로 신청 내역을 삭제하시겠습니까?\n삭제된 내역은 복구할 수 없습니다.")) return;
+    setLoading(true);
+    const { error: dbErr } = await supabase
+      .from("alliance_applications")
+      .delete()
+      .eq("id", app.id);
+    setLoading(false);
+    if (dbErr) {
+      alert("삭제 실패: " + dbErr.message);
+      return;
+    }
+    alert("신청 내역이 삭제되었습니다.");
+    window.location.href = "/alliance/applications";
+  }
+
   if (!app) {
     return (
       <main className="min-h-screen bg-gray-50">
@@ -138,7 +155,6 @@ export default function ApplicationDetail({ params }: { params: Promise<{ id: st
           </div>
 
           <div className="bg-pink-50 border-l-4 p-3 rounded text-sm mb-3" style={{ borderColor: "#E6007E" }}>
-            <p className="text-xs text-gray-500 mb-1">제공 혜택</p>
             <p className="text-gray-800">{app.benefit}</p>
           </div>
 
@@ -150,6 +166,20 @@ export default function ApplicationDetail({ params }: { params: Promise<{ id: st
           )}
 
           <p className="text-[11px] text-gray-400">신청일: {new Date(app.created_at).toLocaleString("ko-KR")}</p>
+
+          <div className="border-t border-gray-100 pt-4 mt-4">
+            <button
+              onClick={handleDelete}
+              disabled={loading}
+              className="w-full py-3 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
+              style={{ backgroundColor: "#EF4444" }}
+            >
+              🗑 신청 내역 삭제
+            </button>
+            <p className="text-[11px] text-gray-400 mt-2 text-center">
+              삭제된 신청 내역은 복구할 수 없습니다.
+            </p>
+          </div>
         </div>
       </section>
     </main>

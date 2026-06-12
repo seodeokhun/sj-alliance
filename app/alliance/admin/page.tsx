@@ -73,6 +73,19 @@ export default function AdminPage() {
     setApps((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
   }
 
+  async function deleteApp(id: string, storeName: string) {
+    if (!confirm(`「${storeName}」 신청을 삭제하시겠습니까?\n삭제된 내역은 복구할 수 없습니다.`)) return;
+    const { error: dbErr } = await supabase
+      .from("alliance_applications")
+      .delete()
+      .eq("id", id);
+    if (dbErr) {
+      alert("삭제 실패: " + dbErr.message);
+      return;
+    }
+    setApps((prev) => prev.filter((a) => a.id !== id));
+  }
+
   return (
     <main className="min-h-screen bg-gray-50">
       <header className="px-5 py-4 sticky top-0 z-40 flex items-center gap-3" style={{ backgroundColor: "#11306E" }}>
@@ -109,14 +122,14 @@ export default function AdminPage() {
             {apps.length === 0 ? "신청 내역이 없습니다" : "해당 상태의 신청이 없습니다"}
           </p>
         ) : (
-          filteredApps.map((a) => <AppCard key={a.id} app={a} isAdmin={isAdmin} onChangeStatus={changeStatus} />)
+          filteredApps.map((a) => <AppCard key={a.id} app={a} isAdmin={isAdmin} onChangeStatus={changeStatus} onDelete={deleteApp} />)
         )}
       </section>
     </main>
   );
 }
 
-function AppCard({ app, isAdmin, onChangeStatus }: { app: App; isAdmin: boolean; onChangeStatus: (id: string, status: string, reason?: string) => void }) {
+function AppCard({ app, isAdmin, onChangeStatus, onDelete }: { app: App; isAdmin: boolean; onChangeStatus: (id: string, status: string, reason?: string) => void; onDelete: (id: string, storeName: string) => void }) {
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [rejectReason, setRejectReason] = useState(app.reject_reason || "");
   const status = STATUS_LABEL[app.status] || STATUS_LABEL.pending;
@@ -154,8 +167,9 @@ function AppCard({ app, isAdmin, onChangeStatus }: { app: App; isAdmin: boolean;
       <p className="text-[11px] text-gray-400 mb-2">신청일: {new Date(app.created_at).toLocaleString("ko-KR")}</p>
 
       {isAdmin && (
-        <div className="border-t border-gray-100 pt-3 mt-3">
+        <div className="border-t border-gray-100 pt-3 mt-3 space-y-2">
           {!showRejectInput ? (
+            <>
             <div className="flex gap-2">
               <button onClick={() => onChangeStatus(app.id, "pending")} className="flex-1 py-2 rounded text-xs font-medium border border-gray-300 hover:bg-gray-50">
                 🟡 대기
@@ -167,12 +181,18 @@ function AppCard({ app, isAdmin, onChangeStatus }: { app: App; isAdmin: boolean;
                 🔴 불가
               </button>
             </div>
+            <button
+              onClick={() => onDelete(app.id, app.store_name)}
+              className="w-full py-2 rounded text-xs font-medium border border-red-300 text-red-600 hover:bg-red-50"
+            >
+              🗑 신청 삭제
+            </button>
+            </>
           ) : (
             <div className="space-y-2">
               <input
                 type="text"
                 value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="불가 사유를 한 줄로 입력"
                 className="w-full px-3 py-2 border border-gray-300 rounded text-xs outline-none focus:border-red-400"
                 autoFocus
