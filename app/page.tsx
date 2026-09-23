@@ -32,6 +32,18 @@ export default function Home() {
         { href: "/map", labelKey: "subAllMap", ready: true },
       ],
     },
+        {
+      key: "place",
+      icon: "🗺️",
+      titleKey: "catPlace",
+      descKey: "catPlaceDesc",
+      bg: "#7C3AED",
+      subs: [
+        { href: "/place/board", labelKey: "subPlaceBoard", ready: true },
+        { href: "/place/register", labelKey: "subPlaceRegister", ready: true },
+      ],
+    },
+
     // 제출용 임시 숨김 (복원 시 주석 해제)
     // {
     //   key: "care",
@@ -75,29 +87,6 @@ export default function Home() {
       subs: [
         { href: "/shuttle?tab=school", labelKey: "subCommuteSchool", ready: true },
         { href: "/shuttle?tab=city", labelKey: "subCommuteCity", ready: true },
-      ],
-    },
-    {
-      key: "place",
-      icon: "🗺️",
-      titleKey: "catPlace",
-      descKey: "catPlaceDesc",
-      bg: "#7C3AED",
-      subs: [
-        { href: "/place/board", labelKey: "subPlaceBoard", ready: true },
-        { href: "/place/register", labelKey: "subPlaceRegister", ready: true },
-      ],
-    },
-    {
-      key: "volunteer",
-      icon: "🤝",
-      titleKey: "catVolunteer",
-      descKey: "catVolunteerDesc",
-      bg: "#E6007E",
-      ready: false,
-      subs: [
-        { href: "/volunteer/recruit", labelKey: "subListStores", ready: false },
-        { href: "/volunteer/apply", labelKey: "subShareRegister", ready: false },
       ],
     },
   ];
