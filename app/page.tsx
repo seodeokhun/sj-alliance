@@ -78,6 +78,17 @@ export default function Home() {
       ],
     },
     {
+      key: "place",
+      icon: "🗺️",
+      titleKey: "catPlace",
+      descKey: "catPlaceDesc",
+      bg: "#7C3AED",
+      subs: [
+        { href: "/place/board", labelKey: "subPlaceBoard", ready: true },
+        { href: "/place/register", labelKey: "subPlaceRegister", ready: true },
+      ],
+    },
+    {
       key: "volunteer",
       icon: "🤝",
       titleKey: "catVolunteer",
