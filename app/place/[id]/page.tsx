@@ -250,14 +250,8 @@ export default function PlaceDetail() {
                 <span>📍</span>
                 <span>{displayAddr}</span>
               </div>
-              
-                href={`https://map.kakao.com/?q=${encodeURIComponent(place.address || displayAddr)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold"
-                style={{ backgroundColor: "#FEE500", color: "#3C1E1E" }}
-              >
-                🗺️ {locale === "ko" ? "카카오맵" : locale === "en" ? "Directions" : locale === "vi" ? "Chỉ đường" : "Yo'l"}
+              <a href={`https://map.kakao.com/?q=${encodeURIComponent(place.address || displayAddr)}`} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold" style={{ backgroundColor: "#FEE500", color: "#3C1E1E" }}>
+                {"🗺️ "}{locale === "ko" ? "카카오맵" : locale === "en" ? "Directions" : locale === "vi" ? "Chỉ đường" : "Yo'l"}
               </a>
             </div>
           )}
